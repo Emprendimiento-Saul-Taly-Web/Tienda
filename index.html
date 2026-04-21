@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emprendimiento Saul Taly - Oficial</title>
+    <script src="cordova.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
+    
         :root { 
             --rojo: #e63946; 
             --negro: #1d3557; 
@@ -89,10 +92,36 @@
             background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), linear-gradient(rgba(60, 30, 10, 0.9), rgba(40, 20, 5, 0.95));
             background-color: #3d1f05;
             padding: 15px 0; text-align: center; z-index: 1000; box-shadow: 0 -10px 25px rgba(0,0,0,0.4); 
-        }
+      }
         
         table { width: 100%; color: white; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
         th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    
+.filters-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 15px;
+    scrollbar-width: none;
+    margin-bottom: 10px;
+}
+.filters-container::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+    background: white;
+    color: var(--negro);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: 0.3s;
+}
+.filter-chip:active { transform: scale(0.95); background: var(--rojo); color: white; }
+
     </style>
 </head>
 <body onload="window.scrollTo(0,0); fetchTasaBCV();">
@@ -135,8 +164,8 @@
 
 <header id="top-header">
     <div class="logo-btn" onmousedown="startHold()" onmouseup="endHold()" ontouchstart="startHold()" ontouchend="endHold()">
-        <img id="logo-img" src="" style="display:none;">
-        <span id="logo-txt">ST</span>
+        <img id="logo-img" src="img/logo.png">
+        <span id="logo-txt" style="display:none;">ST</span>
     </div>
     <h2 style="margin:0;">Emprendimiento Saul Taly</h2>
     <span class="slogan">¡¡Productos naturales para tu salud!!</span>
@@ -144,9 +173,18 @@
 </header>
 
 <div class="search-container">
-    <input type="text" id="busqueda" placeholder="¿Qué estás buscando hoy?" oninput="render()">
-    <span class="search-icon">🔍</span>
+    <input type="text" id="busqueda" placeholder="¿Qué estás buscando hoy?" oninput="render(false)">
+    <span class="search-icon" onclick="render(true)" style="cursor:pointer">🔍</span>
 </div>
+
+<div class="filters-container" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 15px; margin-bottom: 10px;">
+    <div class="filter-chip" onclick="quickSearch('Mani')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🥜 Maníes</div>
+    <div class="filter-chip" onclick="quickSearch('Miel')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🍯 Miel</div>
+    <div class="filter-chip" onclick="quickSearch('Merey')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🌳 Mereys</div>
+    <div class="filter-chip" onclick="quickSearch('Empaques')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🎁 Empaquetados</div>
+    <div class="filter-chip" onclick="quickSearch('')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">✨ Todo</div>
+</div>
+
 
 <div class="slider-container" id="swipe-area">
     <button class="nav-btn prev" onclick="moveSlide(-1)">❮</button>
@@ -199,21 +237,28 @@
 </div>
 
 <script>
-    // NUEVA CONFIGURACIÓN DE FIREBASE ACTUALIZADA
-    const firebaseConfig = {
-      apiKey: "AIzaSyAwdXNniflYWXCGxJPCbBlFMr8NB09XgRY",
-      authDomain: "web-emprendimiento-saul-taly.firebaseapp.com",
-      databaseURL: "https://web-emprendimiento-saul-taly-default-rtdb.firebaseio.com",
-      projectId: "web-emprendimiento-saul-taly",
-      storageBucket: "web-emprendimiento-saul-taly.firebasestorage.app",
-      messagingSenderId: "1074941413246",
-      appId: "1:1074941413246:web:b943421f8e08c8b696152f"
-    };
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let currentConfig = {}, currentItems = [], cart = {}, slideIndex = 0, holdTimer, autoSlide, fsInterval, currentFsIndex = 0;
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyB1g-RlgYzB5bGqGK05r94W5qPcUqvf3VA",
+  authDomain: "tienda-margarita-empstaly.firebaseapp.com",
+  databaseURL: "https://tienda-margarita-empstaly-default-rtdb.firebaseio.com",
+  projectId: "tienda-margarita-empstaly",
+  storageBucket: "tienda-margarita-empstaly.firebasestorage.app",
+  messagingSenderId: "763218903895",
+  appId: "1:763218903895:web:d92f770ed330b655683412",
+  measurementId: "G-CGBPJW0QNX"
+};
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
     async function fetchTasaBCV() {
         const url = 'https://api.exchangerate-api.com/v4/latest/USD'; 
         try {
@@ -223,9 +268,7 @@
             if (tasaOficial && tasaOficial > 0) {
                 db.ref('config/tasa').set(tasaOficial);
             }
-        } catch (e) {
-            console.error("Error obteniendo tasa.");
-        }
+        } catch (e) { console.error("Error obteniendo tasa."); }
     }
 
     db.ref('config').on('value', s => { 
@@ -238,14 +281,17 @@
         document.getElementById('adm-rif').value = currentConfig.rif || "";
         document.getElementById('adm-pago').value = currentConfig.pago || "";
         document.getElementById('adm-desc').value = currentConfig.desc || "";
-        document.getElementById('adm-logo-url').value = currentConfig.logo || "";
         
+        // El logo siempre se carga desde img/logo.png si no hay URL externa
         const logoImg = document.getElementById('logo-img');
         if(currentConfig.logo) { 
             logoImg.src = currentConfig.logo; 
-            logoImg.style.display = 'block'; 
-            document.getElementById('logo-txt').style.display = 'none'; 
+        } else {
+            logoImg.src = "img/logo.png";
         }
+        logoImg.style.display = 'block'; 
+        document.getElementById('logo-txt').style.display = 'none';
+        
         render(); 
     });
 
@@ -256,22 +302,49 @@
         initSlider(); 
     });
 
-    function render() {
-        const busqueda = document.getElementById('busqueda').value.toLowerCase().trim();
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = "";
-        currentItems.forEach(p => {
-            if (p.n.toLowerCase().includes(busqueda)) {
-                const itemInCart = cart[p.id];
-                const qtyDisplay = itemInCart ? `<div class="qty-badge">${itemInCart.c} ${itemInCart.u}</div>` : "";
-                grid.innerHTML += `<div class="card" id="prod-${p.id}">${qtyDisplay}<div class="img-wrap" onclick="openProductDetail('${p.id}')"><img src="${p.i || 'https://via.placeholder.com/150'}"></div><div><h4 style="margin:5px 0">${p.n}</h4><span class="price-bs">${(p.p * (currentConfig.tasa || 1)).toFixed(2)} Bs</span><small style="color:grey;">$${p.p} / ${p.tipo==='peso'?'Kg':'Und'}</small></div><button class="btn-add-grid" onclick="openProductDetail('${p.id}')">Añadir al Carrito</button></div>`;
-            }
-        });
-        updateCartUI();
-        const admBody = document.getElementById('adm-body'); 
-        admBody.innerHTML = "";
-        currentItems.forEach(p => { admBody.innerHTML += `<tr><td>${p.n}</td><td><button onclick="editProd('${p.id}')" style="color:cyan;background:none;border:none;">Edit</button> <button onclick="deleteProd('${p.id}')" style="color:red;background:none;border:none;">X</button></td></tr>`; });
+    function quickSearch(termino) {
+    document.getElementById('busqueda').value = termino;
+    // Forzamos el render con scroll porque el usuario hizo un clic explícito
+    render(true);
+}
+
+function render(debeMoverPantalla = false) {
+    const inputBusqueda = document.getElementById('busqueda');
+    if(!inputBusqueda) return;
+
+    const busqueda = inputBusqueda.value.toLowerCase().trim();
+    const grid = document.getElementById('main-grid');
+    grid.innerHTML = "";
+    
+    let encontrados = 0;
+    currentItems.forEach(p => {
+        if (p.n.toLowerCase().includes(busqueda)) {
+            const itemInCart = cart[p.id];
+            const qtyDisplay = itemInCart ? `<div class="qty-badge">${itemInCart.c} ${itemInCart.u}</div>` : "";
+            grid.innerHTML += `<div class="card" id="prod-${p.id}">${qtyDisplay}<div class="img-wrap" onclick="openProductDetail('${p.id}')"><img src="${p.i || 'https://via.placeholder.com/150'}"></div><div><h4 style="margin:5px 0">${p.n}</h4><span class="price-bs">${(p.p * (currentConfig.tasa || 1)).toFixed(2)} Bs</span><small style="color:grey;">$${p.p} / ${p.tipo==='peso'?'Kg':'Und'}</small></div><button class="btn-add-grid" onclick="openProductDetail('${p.id}')">Añadir al Carrito</button></div>`;
+            encontrados++;
+        }
+    });
+
+    // El movimiento de pantalla solo ocurre si el usuario hizo clic (en lupa o chip)
+    // y si realmente hay productos que mostrar.
+    if (debeMoverPantalla && encontrados > 0) {
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    updateCartUI();
+    
+    const admBody = document.getElementById('adm-body'); 
+    if(admBody) {
+        admBody.innerHTML = "";
+        currentItems.forEach(p => { 
+            admBody.innerHTML += `<tr><td>${p.n}</td><td><button onclick="editProd('${p.id}')" style="color:cyan;background:none;border:none;">Edit</button> <button onclick="deleteProd('${p.id}')" style="color:red;background:none;border:none;">X</button></td></tr>`; 
+        });
+    }
+}
+
+
+
 
     function openProductDetail(id) {
         const p = currentItems.find(x => x.id === id);
@@ -279,7 +352,7 @@
         const content = document.getElementById('product-detail-content');
         const isPeso = p.tipo === 'peso';
         const currentQty = cart[id] ? cart[id].c : "";
-        content.innerHTML = `<span style="position:absolute; top:15px; right:20px; font-size:25px; cursor:pointer;" onclick="closeProductModal()">&times;</span><div style="text-align:center;"><img src="${p.i || 'https://via.placeholder.com/150'}" style="width:100%; max-height:250px; object-fit:contain; border-radius:15px;"><h2 style="margin:15px 0 5px;">${p.n}</h2><p style="color:#666; font-size:0.9rem; margin-bottom:15px;">${p.d || 'Sin descripción disponible.'}</p><div style="background:var(--gris-claro); padding:15px; border-radius:15px; margin-bottom:20px;"><span style="font-size:1.2rem; font-weight:bold; color:var(--rojo);">${(p.p * currentConfig.tasa).toFixed(2)} Bs</span><br><small>$${p.p} por ${isPeso ? 'Kg' : 'Unidad'}</small></div><label style="font-weight:600; display:block; margin-bottom:10px;">¿Qué cantidad desea añadir?</label><input type="number" id="temp-qty" step="${isPeso?'0.1':'1'}" min="0" value="${currentQty}" placeholder="Ej: ${isPeso?'0.5':'1'}" style="width:80%; padding:12px; border-radius:10px; border:2px solid var(--negro); text-align:center; font-size:1.1rem; margin-bottom:20px;"><button class="btn-ws" style="width:100%;" onclick="confirmAdd('${p.id}')">Confirmar y Guardar</button></div>`;
+        content.innerHTML = `<span style="position:absolute; top:15px; right:20px; font-size:25px; cursor:pointer;" onclick="closeProductModal()">&times;</span><div style="text-align:center;"><img src="${p.i || 'https://via.placeholder.com/150'}" style="width:100%; max-height:250px; object-fit:contain; border-radius:15px;"><h2 style="margin:15px 0 5px;">${p.n}</h2><p style="color:#666; font-size:0.9rem; margin-bottom:15px;">${p.d || 'Sin descripción disponible.'}</p><div style="background:var(--gris-claro); padding:15px; border-radius:15px; margin-bottom:20px;"><span style="font-size:1.2rem; font-weight:bold; color:var(--rojo);">${(p.p * currentConfig.tasa).toFixed(2)} Bs</span><br><small>$${p.p} por ${isPeso ? 'Kg' : 'Unidad'}</small></div><label style="font-weight:600; display:block; margin-bottom:10px;">¿Qué cantidad desea añadir?</label><input type="number" id="temp-qty" step="${isPeso?'0.1':'1'}" min="0" value="${currentQty}" placeholder="Ej: ${isPeso?'0.5 para medio kg':'1'}" style="width:80%; padding:12px; border-radius:10px; border:2px solid var(--negro); text-align:center; font-size:1.1rem; margin-bottom:20px;"><button class="btn-ws" style="width:100%;" onclick="confirmAdd('${p.id}')">Confirmar y Guardar</button></div>`;
         modal.style.display = 'block';
     }
 
@@ -312,12 +385,22 @@
 
     function toggleCart(show) { document.getElementById('cart-modal').style.display = show ? 'block' : 'none'; }
 
+    // FUNCIÓN DE WHATSAPP DEFINITIVA
     function sendWS() {
         if(Object.keys(cart).length === 0) return alert("El carrito está vacío.");
+        
         let m = "*🛍️ NUEVO PEDIDO - EMPRENDIMIENTO SAUL TALY*%0A----------------------------------------------------%0A";
-        for(let id in cart) m += `*• ${cart[id].n}* x${cart[id].c} ${cart[id].u}%0A`;
-        m += `%0A💵 *TOTAL USD:* ${document.getElementById('modal-total-usd').innerText}%0A🇻🇪 *TOTAL BS:* ${document.getElementById('modal-total-bs').innerText}%0A%0A💳 _Por favor, confírmeme disponibilidad y datos de pago._`;
-        window.open(`https://wa.me/584126950652?text=${m}`);
+        for(let id in cart) {
+            m += `*• ${cart[id].n}* x${cart[id].c} ${cart[id].u}%0A`;
+        }
+        m += `%0A💵 *TOTAL USD:* ${document.getElementById('modal-total-usd').innerText}%0A`;
+        m += `🇻🇪 *TOTAL BS:* ${document.getElementById('modal-total-bs').innerText}%0A%0A`;
+        m += `💳 _Por favor, confírmeme disponibilidad y los datos de pago._`;
+
+        let url = "https://wa.me/584126950652?text=" + m;
+        
+        // Forzamos la apertura fuera de la app
+        window.open(url, '_system');
     }
 
     function initSlider() {
@@ -386,49 +469,80 @@
         reader.onload = function(e) {
             try {
                 const json = JSON.parse(e.target.result);
-                if (json.productos && Array.isArray(json.productos)) {
-                    if(confirm("Se detectó el respaldo de productos. ¿Deseas importarlos?")) {
-                        let mapeados = {};
-                        json.productos.forEach(p => {
-                            const newId = p.c ? p.c.toString() : db.ref().child('productos').push().key;
-                            mapeados[newId] = {
-                                id: newId,
-                                n: p.n || "Sin nombre",
-                                p: parseFloat(p.p) || 0,
-                                d: "Producto importado",
-                                tipo: "unidad",
-                                i: "" 
-                            };
-                        });
-                        db.ref('productos').set(mapeados).then(() => {
-                            alert("Importación exitosa.");
-                            location.reload();
-                        });
-                    }
-                } 
-                else {
-                    if(confirm("¿Estás seguro de cargar esta copia? Reemplazará los datos actuales.")) {
-                        db.ref().set(json).then(() => {
-                            alert("Base de Datos Restaurada con Éxito");
-                            location.reload();
-                        });
-                    }
+                if (confirm("¿Seguro de cargar esta copia? Reemplazará los datos actuales.")) {
+                    db.ref().set(json).then(() => {
+                        alert("Base de Datos Restaurada con Éxito");
+                        location.reload();
+                    });
                 }
-            } catch (err) {
-                alert("Error: Archivo no válido.");
-            }
+            } catch (err) { alert("Error: Archivo no válido."); }
         };
         reader.readAsText(file);
     }
 
     function borrarTodo() {
         if(confirm("⚠️ ATENCIÓN: ¿Seguro que quieres borrar TODOS los productos?")) {
-            if(confirm("¿Confirmas al 100%?")) {
-                db.ref('productos').remove().then(() => alert("Base de datos vaciada."));
-            }
+            db.ref('productos').remove().then(() => alert("Base de datos vaciada."));
         }
     }
+        // --- LÓGICA PROFESIONAL DEL BOTÓN ATRÁS (CORDOVA) ---
+    let lastTimeBackPress = 0;
+    let timePeriodToExit = 2000;
+
+    document.addEventListener("deviceready", function() {
+        document.addEventListener("backbutton", function(e) {
+            
+            // 1. Cerrar Panel Admin si está abierto
+            const admin = document.getElementById('admin-panel');
+            if (admin && admin.style.display === 'block') {
+                admin.style.display = 'none';
+                return;
+            }
+
+            // 2. Cerrar Visor de Fotos (Full Screen)
+            const fs = document.getElementById('fs-overlay');
+            if (fs && fs.style.display === 'flex') {
+                closeSaulTalyFS();
+                return;
+            }
+
+            // 3. Cerrar Detalle de Producto
+            const pModal = document.getElementById('product-modal');
+            if (pModal && pModal.style.display === 'block') {
+                closeProductModal();
+                return;
+            }
+
+            // 4. Cerrar Carrito
+            const cModal = document.getElementById('cart-modal');
+            if (cModal && cModal.style.display === 'block') {
+                toggleCart(false);
+                return;
+            }
+
+            // 5. Si está scrolleado hacia abajo, subir al inicio
+            if (window.pageYOffset > 100) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // 6. Confirmación de salida (Doble toque en 2 segundos)
+            let cuurentTime = new Date().getTime();
+            if (cuurentTime - lastTimeBackPress < timePeriodToExit) {
+                navigator.app.exitApp(); // Sale de la aplicación
+            } else {
+                lastTimeBackPress = cuurentTime;
+                // Mostramos un aviso nativo de Android si el plugin está disponible
+                if(window.plugins && window.plugins.toast) {
+                    window.plugins.toast.showShortBottom('Presione atrás nuevamente para salir');
+                } else {
+                    alert("Presione atrás nuevamente para salir de Saul Taly");
+                }
+            }
+        }, false);
+    }, false);
+
 </script>
 </body>
 </html>
-                
+
