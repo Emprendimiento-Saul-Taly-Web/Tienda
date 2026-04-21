@@ -168,6 +168,7 @@
         <span id="logo-txt" style="display:none;">ST</span>
     </div>
     <h2 style="margin:0;">Emprendimiento Saul Taly</h2>
+    <span class="slogan">Sede Isla De Margarita</span>
     <span class="slogan">¡¡Productos naturales para tu salud!!</span>
     <small id="rif-view" style="color:var(--rojo); font-weight:bold;"></small>
 </header>
@@ -237,14 +238,16 @@
 </div>
 
 <script>
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    let currentItems = [];
+let currentConfig = {};
+let cart = {};
+let slideIndex = 0;
+let autoSlide;
+let holdTimer;
+let currentFsIndex = 0;
+let fsInterval;
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Configuración de Firebase (está correcta)
 const firebaseConfig = {
   apiKey: "AIzaSyB1g-RlgYzB5bGqGK05r94W5qPcUqvf3VA",
   authDomain: "tienda-margarita-empstaly.firebaseapp.com",
@@ -256,9 +259,10 @@ const firebaseConfig = {
   measurementId: "G-CGBPJW0QNX"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// INICIALIZACIÓN CORRECTA PARA MODO COMPAT
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database(); // Esto define la variable 'db' que usas en todo el código
+
     async function fetchTasaBCV() {
         const url = 'https://api.exchangerate-api.com/v4/latest/USD'; 
         try {
@@ -389,7 +393,7 @@ function render(debeMoverPantalla = false) {
     function sendWS() {
         if(Object.keys(cart).length === 0) return alert("El carrito está vacío.");
         
-        let m = "*🛍️ NUEVO PEDIDO - EMPRENDIMIENTO SAUL TALY*%0A----------------------------------------------------%0A";
+        let m = "*🛍️ NUEVO PEDIDO - Isla de margarita-EMPRENDIMIENTO SAUL TALY*%0A----------------------------------------------------%0A";
         for(let id in cart) {
             m += `*• ${cart[id].n}* x${cart[id].c} ${cart[id].u}%0A`;
         }
