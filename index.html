@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emprendimiento Saul Taly - Oficial</title>
+    <script src="cordova.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        /* --- ESTILOS DEL PANEL ADMIN ORGANIZADO POR SECCIONES --- */
+#admin-panel {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #121212;
+    color: #fff;
+    z-index: 7000;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.admin-header-nav {
+    background: #1a1a1a;
+    padding: 15px;
+    border-bottom: 2px solid var(--rojo);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-nav-tabs {
+    display: flex;
+    gap: 8px;
+    background: #1e1e1e;
+    padding: 10px;
+    overflow-x: auto;
+    border-bottom: 1px solid #333;
+}
+
+.admin-tab-btn {
+    background: #2b2b2b;
+    color: #ccc;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s;
+}
+
+.admin-tab-btn.active {
+    background: var(--rojo);
+    color: white;
+}
+
+.admin-section {
+    display: none;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+.admin-card-box {
+    background: #1e1e1e;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    margin-bottom: 20px;
+}
+
+.admin-card-box h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #fff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 8px;
+}
+
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+
+        /* --- DATOS BANCARIOS COPIABLES Y CHECKOUT --- */
+.datos-bancarios-card {
+    background: #f8f9fa;
+    border-left: 4px solid var(--rojo);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 0.85rem;
+    position: relative;
+    line-height: 1.6;
+}
+
+.btn-copiar-dato {
+    background: var(--negro);
+    color: white;
+    border: none;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.comprobante-preview {
+    width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+    margin-top: 8px;
+    border-radius: 6px;
+    display: none;
+    border: 1px dashed #ccc;
+}
+
+        /* MODAL BASE */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 6000;
+            overflow-y: auto;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+       .modal-content {
+            background: #ffffff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin: auto; /* Cambiado de '40px auto' a 'auto' */
+            height: fit-content; /* Fuerza a que no crezca más de lo necesario */
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        :root {
+            --rojo: #e63946;
+            --negro: #1d3557;
+            --blanco: #ffffff;
+            --gris-claro: #f8f9fa;
+            --sombra: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* ESTILOS DE MÉTODOS DE PAGO Y REPORTAR PAGO */
+.metodos-pago-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.metodo-card {
+    border: 2px solid #eee;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f9f9f9;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.metodo-card.active {
+    border-color: var(--rojo);
+    background: #fff0f1;
+    color: var(--rojo);
+}
+
+.info-pago-box {
+    background: var(--gris-claro);
+    border-left: 4px solid var(--rojo);
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin: 15px 0;
+    line-height: 1.4;
+}
+
+.info-pago-box strong {
+    color: var(--negro);
+}
+
+.bcv-tasa-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #0052D4, #4364F7);;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color:  #ffffff;
+    margin-bottom: 10px;
+}
+
+/* --- OPCIONES DE ENVÍO Y ENTREGA --- */
+.envio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.envio-card {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.envio-card.active {
+    border-color: var(--rojo);
+    background: #fff0f1;
+    color: var(--rojo);
+}
+
+.campo-envio-dinamico {
+    display: none;
+    margin-top: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), linear-gradient(rgba(60, 30, 10, 0.7), rgba(40, 20, 5, 0.8));
+            background-color: #3d1f05;
+            margin: 0; padding: 0; color: #333; -webkit-tap-highlight-color: transparent;
+        }
+
+        #admin-panel { display: none; background: #000; color: #fff; padding: 25px; border-bottom: 5px solid var(--rojo); z-index: 5000; position: relative; }
+        .admin-in { width: 95%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; display: block; margin-bottom: 12px;}
+
+        header { padding: 30px 20px; text-align: center; background: white; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+        .logo-btn {
+            width: 90px; height: 90px; background: var(--negro); border-radius: 50%;
+            margin: 0 auto 15px; border: 4px solid var(--rojo);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer; box-shadow: 0 5px 15px rgba(230, 57, 70, 0.3);
+            position: relative;
+        }
+        #logo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        #logo-txt { position: absolute; color: white; font-weight: bold; font-size: 1.5rem; }
+        .slogan { color: #666; font-size: 0.85rem; display: block; margin-top: 5px; font-weight: 300; }
+
+        .search-container { width: 90%; max-width: 500px; margin: 20px auto; position: relative; }
+        .search-container input {
+            width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 1px solid #ddd;
+            box-shadow: var(--sombra); outline: none; font-family: inherit; box-sizing: border-box;
+            background: white;
+        }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--rojo); font-size: 1.2rem; }
+
+        .slider-container { width: 92%; margin: 20px auto; overflow: hidden; background: #fff; height: 220px; position: relative; border-radius: 25px; box-shadow: var(--sombra); touch-action: pan-y; }
+        .slider-track { display: flex; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; }
+        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .slide img { height: 100%; width: 100%; object-fit: contain; padding: 10px; box-sizing: border-box; }
+
+        .slide-info { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--rojo); color: white; padding: 5px 15px; border-radius: 20px; text-align: center; white-space: nowrap; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; border: none; padding: 15px 10px; cursor: pointer; border-radius: 5px; z-index: 10; font-weight: bold; }
+        .prev { left: 5px; } .next { right: 5px; }
+
+        .container { padding: 20px; max-width: 1000px; margin: auto; padding-bottom: 150px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 20px; }
+        .card { border: none; border-radius: 20px; padding: 15px; text-align: center; background: white; box-shadow: var(--sombra); scroll-margin-top: 100px; transition: transform 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .img-wrap { width: 100%; height: 150px; overflow: hidden; border-radius: 15px; margin-bottom: 10px; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+
+        .price-bs { color: var(--rojo); font-weight: 700; font-size: 1.1rem; display: block; margin-top: 5px; }
+
+        .info-footer-box { background: white; padding: 20px; border-radius: 20px; margin-top: 30px; box-shadow: var(--sombra); }
+        .info-footer-box h4 { color: var(--negro); margin-top: 0; border-bottom: 2px solid var(--rojo); display: inline-block; padding-bottom: 5px; }
+
+        #cart-modal, #product-modal, #fs-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; overflow-y: auto; }
+        #fs-overlay { background: rgba(0,0,0,0.96); z-index: 9999; justify-content: center; align-items: center; }
+        #fs-img-src { max-width: 90%; max-height: 80%; border-radius: 15px; object-fit: contain; transition: opacity 0.5s ease; }
+
+        .btn-add-grid { background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 15px; width: 100%; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .qty-badge { position: absolute; top: 10px; left: 10px; background: var(--rojo); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .view-fs-btn { position: absolute; top: 10px; right: 10px; background: var(--rojo); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 15; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.btn-ws {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 35px;
+  width: 100%;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+        .footer {
+            position: fixed; bottom: 0; width: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), linear-gradient(rgba(60, 30, 10, 0.9), rgba(40, 20, 5, 0.95));
+            background-color: #3d1f05;
+            padding: 15px 20px; text-align: center; z-index: 1000; box-shadow: 0 -10px 25px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+        }
+
+        .footer-content {
+            max-width: 500px;
+            margin: 0 auto;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-confirmar-pago {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        table { width: 100%; color: white; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+
+        .filters-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 15px;
+            scrollbar-width: none;
+            margin-bottom: 10px;
+        }
+        .filters-container::-webkit-scrollbar { display: none; }
+
+        .filter-chip {
+            background: white;
+            color: var(--negro);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+         <p style="text-align: center; font-size: 0.8rem; color: #777;">
+    &copy; 2026 Emprendimiento Saul Taly. Todos los derechos reservados.
+</p>
+      .filter-chip:active { transform: scale(0.95); background: var(--rojo); color: white; }
+
+    </style>
+</head>
+<body onload="window.scrollTo(0,0); fetchTasaBCV();">
+
+<!-- PANEL ADMIN REORGANIZADO EN PÁGINA INDEPENDIENTE -->
+<div id="admin-panel">
+    <!-- Encabezado Fijo -->
+    <div class="admin-header-nav">
+        <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">⚙️ Administración Saul Taly</h3>
+        <button onclick="cerrarAdminPanel()" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            ✖️ Salir
+        </button>
+    </div>
+
+    <!-- Navegación por Pestañas -->
+    <div class="admin-nav-tabs">
+        <button class="admin-tab-btn active" onclick="switchAdminTab('sec-pedidos', this)">📋 Pedidos</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('sec-clientes', this)">👥 Clientes</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('sec-productos', this)">📦 Productos</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('sec-config', this)">🛠️ Configuración</button>
+    </div>
+
+    <!-- SECCIÓN 1: PEDIDOS CON FILTRO DE BÚSQUEDA -->
+    <div id="sec-pedidos" class="admin-section active">
+        <div class="admin-card-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h4 style="margin: 0;">📋 Gestión de Pedidos Recibidos</h4>
+                <input type="text" id="buscar-pedido-adm" placeholder="🔍 Buscar por N° Pedido, Cliente o C.I..." oninput="filtrarPedidosAdmin()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #444; background: #222; color: white; font-size: 0.85rem; width: 100%; max-width: 280px;">
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button type="button" onclick="cargarPedidosAdmin('PENDIENTE')" id="btn-adm-pen" style="flex:1; padding:8px; background:var(--rojo); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+                    ⏳ Pendientes
+                </button>
+                <button type="button" onclick="cargarPedidosAdmin('APROBADO')" id="btn-adm-apr" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+                    ✅ Aprobados
+                </button>
+                <button type="button" onclick="cargarPedidosAdmin('RECHAZADO')" id="btn-adm-rec" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+                    ❌ Rechazados
+                </button>
+            </div>
+            <div id="admin-pedidos-lista" style="max-height: 450px; overflow-y: auto; background: #111; padding: 12px; border-radius: 8px; border: 1px solid #333;">
+                <p style="color:#aaa; font-size:0.8rem; text-align:center;">Cargando pedidos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: CLIENTES -->
+    <div id="sec-clientes" class="admin-section">
+        <div class="admin-card-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="margin: 0;">👥 Directorio de Clientes Registrados</h4>
+                <input type="text" id="buscar-cliente-adm" placeholder="🔍 Buscar por nombre o C.I..." oninput="filtrarClientesAdmin()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #444; background: #222; color: white; font-size: 0.85rem;">
+            </div>
+            <div id="admin-clientes-lista" style="max-height: 450px; overflow-y: auto;">
+                <p style="color:#aaa; font-size:0.8rem; text-align:center;">Cargando lista de clientes...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: PRODUCTOS -->
+    <div id="sec-productos" class="admin-section">
+        <div class="admin-card-box">
+            <h4 id="form-title">Gestionar Producto</h4>
+            <input type="hidden" id="edit-id">
+            <div class="admin-grid-2">
+                <input type="text" id="add-n" class="admin-in" placeholder="Nombre del Producto">
+                <input type="text" id="add-d" class="admin-in" placeholder="Descripción Corta">
+                <input type="number" id="add-p" class="admin-in" placeholder="Precio $" step="0.01">
+                <select id="add-tipo" class="admin-in">
+                    <option value="unidad">Venta por Unidad</option>
+                    <option value="peso">Venta por Peso (Kg)</option>
+                </select>
+            </div>
+            <input type="text" id="add-img-url" class="admin-in" placeholder="URL de la imagen">
+            <button onclick="uploadProd()" style="width:100%; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">Guardar Producto</button>
+            <button id="btn-cancel" onclick="clearForm()" style="width:100%; margin-top:5px; background:#6c757d; color:white; border:none; padding:8px; border-radius:8px; display:none; cursor:pointer;">Cancelar Edición</button>
+        </div>
+
+        <div class="admin-card-box">
+            <h4>Inventario Actual</h4>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;">
+                    <thead><tr><th style="text-align:left;">Producto</th><th style="text-align:right;">Acción</th></tr></thead>
+                    <tbody id="adm-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 4: CONFIGURACIÓN Y RESPALDOS -->
+    <div id="sec-config" class="admin-section">
+        <div class="admin-card-box">
+            <h4>💳 Métodos de Pago y Datos Bancarios</h4>
+            <textarea id="adm-pago-movil" class="admin-in" rows="2" placeholder="Pago Móvil (Ej: Banco: Banesco | RIF: J-504752800 | Tel: 0414-0000000)"></textarea>
+            <textarea id="adm-transferencia" class="admin-in" rows="2" placeholder="Transferencia Bs (Ej: Banco: Banesco | Cuenta: 0134... | Titular: ... | RIF: ...)"></textarea>
+            <textarea id="adm-bnc" class="admin-in" rows="2" placeholder="Divisas BNC (Ej: Banco: BNC | Cuenta: 0191... | Titular: ... | RIF: ...)"></textarea>
+            <textarea id="adm-binance" class="admin-in" rows="2" placeholder="Binance Pay (Ej: Pay ID: 123456789 | Correo: ... | Moneda: USDT)"></textarea>
+        </div>
+
+        <div class="admin-card-box">
+            <h4>⚙️ Configuración General del Negocio</h4>
+            <div class="admin-grid-2">
+                <input type="number" id="adm-tasa" class="admin-in" placeholder="Tasa BCV">
+                <input type="text" id="adm-rif" class="admin-in" placeholder="RIF">
+            </div>
+            <textarea id="adm-desc" class="admin-in" rows="2" placeholder="Descripción del Negocio"></textarea>
+            <input type="text" id="adm-logo-url" class="admin-in" placeholder="URL del Logo">
+            <button onclick="saveGlobalConfig()" style="width:100%; padding:12px; background:var(--rojo); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">Actualizar Configuración</button>
+        </div>
+
+        <div class="admin-card-box">
+            <h4>💾 Base de Datos y Respaldos</h4>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button onclick="exportarData()" style="flex:1; padding:10px; background:#444; color:white; border:none; border-radius:6px; cursor:pointer;">📥 Exportar Copia</button>
+                <button onclick="document.getElementById('file-import').click()" style="flex:1; padding:10px; background:#444; color:white; border:none; border-radius:6px; cursor:pointer;">📤 Cargar Copia</button>
+                <input type="file" id="file-import" style="display:none" accept=".json" onchange="importarData(event)">
+            </div>
+            <button onclick="borrarTodo()" style="width:100%; padding:10px; background:#900; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">⚠️ BORRAR TODO EL INVENTARIO</button>
+        </div>
+    </div>
+</div>
+
+<header id="top-header">
+    <div class="logo-btn" ontouchstart="startHold()" ontouchend="endHold()" onmousedown="startHold()" onmouseup="endHold()">
+        <img id="logo-img" src="" alt="Logo" style="display:none; max-height: 100%; max-width: 100%; object-fit: contain;">
+        <span id="logo-txt" style="display:none;">ST</span>
+    </div>
+
+    <h2 style="margin:0;">Emprendimiento Saul Taly</h2>
+
+    <small id="rif-view" style="color:var(--rojo); font-weight:bold;"></small>
+
+    <span class="slogan">¡¡Productos naturales para tu salud!!</span>
+
+
+    <!-- Botones de usuario cuando tiene la sesión activa (Ocultos si no ha iniciado sesión) -->
+    <div id="user-actions" style="margin-bottom: 15px; display: none; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <button type="button" onclick="abrirPerfilUsuario()" style="background: var(--negro); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+            👤 Mi Perfil
+        </button>
+
+        <button type="button" onclick="abrirModalMisPedidos()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+            📦 Mis Pedidos
+        </button>
+        <button type="button" onclick="reportarFallaWhatsApp()" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+            🛠️ Soporte tecnico / Ayuda
+        </button>
+
+        <button type="button" onclick="logoutClient()" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+            🚪 Cerrar Sesión
+        </button>
+
+
+    </div>
+    <div class="footer">
+        <div class="footer-content">
+            <button class="btn-ws" onclick="abrirModalCheckout()">
+                Ir al carrito🛒
+                | items (<span id="cart-count">0</span>) | <span id="total-view">$0.00</span>
+            </button>
+
+        </div>
+    </div>
+    <!-- Botón centrado para abrir la autenticación cuando NO se ha iniciado sesión -->
+    <div id="user-bar" style="margin-top: 15px; display: flex; justify-content: center; align-items: center;">
+        <button id="btn-open-auth" onclick="toggleAuthModal(true)" style="background:var(--negro); color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-size:0.9rem; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+            🔑 Iniciar Sesión / Registrarse
+        </button>
+        <div id="user-info" style="display:none; align-items:center; justify-content:center; gap:10px;">
+            <span id="user-display-name" style="font-size:0.85rem; font-weight:600;"></span>
+        </div>
+    </div>
+</header>
+
+<div class="search-container">
+    <input type="text" id="busqueda" placeholder="¿Qué estás buscando hoy?" oninput="render(false)">
+    <span class="search-icon" onclick="render(true)" style="cursor:pointer">🔍</span>
+</div>
+
+<div class="filters-container" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 15px; margin-bottom: 10px;">
+    <div class="filter-chip" onclick="quickSearch('Mani')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🥜 Maníes</div>
+    <div class="filter-chip" onclick="quickSearch('Miel')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🍯 Miel</div>
+    <div class="filter-chip" onclick="quickSearch('Merey')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🌳 Mereys</div>
+    <div class="filter-chip" onclick="quickSearch('Empaques')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">🎁 Empaquetados</div>
+    <div class="filter-chip" onclick="quickSearch('')" style="background:white; padding:8px 15px; border-radius:20px; border:1px solid #ddd; cursor:pointer; white-space:nowrap;">✨ Todo</div>
+</div>
+
+<div style="background:var(--rojo); color:white; padding:8px; border-radius:20px; text-align:center; margin-bottom:20px; font-weight:bold;">
+    TASA BCV DEL DÍA: <span id="tasa-view">0.00</span> Bs/$
+</div>
+<div class="slider-container" id="swipe-area">
+    <button class="nav-btn prev" onclick="moveSlide(-1)">❮</button>
+    <div class="slider-track" id="slider-track"></div>
+    <button class="nav-btn next" onclick="moveSlide(1)">❯</button>
+</div>
+
+<div class="container">
+
+    <div class="grid" id="main-grid"></div>
+    <div class="info-footer-box">
+        <h4>Sobre Nosotros</h4>
+        <p id="view-desc" style="white-space: pre-wrap; font-size: 0.9rem; color: #555;"></p>
+    </div>
+
+    <!-- Caja de Derechos Reservados -->
+    <div class="info-footer-box" style="text-align: center;">
+        <p style="font-size: 0.85rem; color: #666; margin: 0;">
+            &copy; 2026 <strong>Emprendimiento Saul Taly</strong>. Todos los derechos reservados.
+        </p>
+    </div>
+
+</div>
+
+<div id="product-modal">
+    <div class="modal-content" id="product-detail-content"></div>
+</div>
+
+<div id="fs-overlay">
+    <span style="position:absolute; top:20px; right:25px; color:white; font-size:40px; cursor:pointer;" onclick="closeSaulTalyFS()">&times;</span>
+    <img id="fs-img-src" src="">
+</div>
+
+<div id="cart-modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">🛒 Detalle del Pedido</h3>
+        <div id="cart-items-list" style="max-height: 300px; overflow-y: auto;"></div>
+        <hr style="border:0.5px solid #eee; margin:15px 0;">
+        <div style="text-align:right; font-weight:600;">
+            Total USD: <span id="modal-total-usd">$0.00</span><br>
+            Total Bs: <span id="modal-total-bs">0.00 Bs</span>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwdXNniflYWXCGxJPCbBlFMr8NB09XgRY",
+      authDomain: "web-emprendimiento-saul-taly.firebaseapp.com",
+      databaseURL: "https://web-emprendimiento-saul-taly-default-rtdb.firebaseio.com",
+      projectId: "web-emprendimiento-saul-taly",
+      storageBucket: "web-emprendimiento-saul-taly.firebasestorage.app",
+      messagingSenderId: "1074941413246",
+      appId: "1:1074941413246:web:b943421f8e08c8b696152f"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let currentConfig = {}, currentItems = [], cart = {}, slideIndex = 0, holdTimer, autoSlide, fsInterval, currentFsIndex = 0;
+
+// Configuración de la segunda Firebase (Insumos)
+const insumosConfig = {
+    apiKey: "AIzaSyD2XJbKggN2vNQP2qXBg7d32m_3QJB0h4w",
+    authDomain: "emprendimientosaultaly-f3291.firebaseapp.com",
+    databaseURL: "https://emprendimientosaultaly-f3291-default-rtdb.firebaseio.com",
+    projectId: "emprendimientosaultaly-f3291",
+    storageBucket: "emprendimientosaultaly-f3291.firebasestorage.app",
+    messagingSenderId: "421827246124",
+    appId: "1:421827246124:web:9d8c71a07b2728a8263989",
+    measurementId: "G-6YDZ4JSQDM"
+};
+
+// Se inicializa con el nombre 'appInsumos' para no interferir con la principal
+const appInsumos = firebase.initializeApp(insumosConfig, "appInsumos");
+const dbInsumos = appInsumos.database();
+
+// Variable global para guardar los insumos
+// Variable global para guardar los insumos
+let listaInsumos = [];
+
+// Escuchar la ruta exacta en Firebase: app_data -> insumos
+dbInsumos.ref('app_data/insumos').on('value', snapshot => {
+    const data = snapshot.val();
+    // Como en tu captura es un array (índices 0, 1, 2...), Object.values nos sirve perfecto
+    listaInsumos = data ? Object.values(data) : [];
+
+    // Si la función render ya existe al cargar los datos, refrescamos la vista
+    if (typeof render === 'function') {
+        render();
+    }
+});
+
+function generarHtmlFactura(pedido) {
+    let tablaFilas = "";
+    let subtotalUSD = 0;
+
+    for (let key in pedido.items) {
+        const item = pedido.items[key];
+        const totalLinea = item.p * item.c;
+        subtotalUSD += totalLinea;
+
+        tablaFilas += `
+            <tr>
+                <td style="padding:6px; border:1px solid #ddd;">${item.n}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;">${item.c} ${item.u}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:right;">$${parseFloat(item.p).toFixed(2)}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:right;">$${totalLinea.toFixed(2)}</td>
+            </tr>
+        `;
+    }
+
+    const tasa = currentConfig.tasa || 1;
+    const totalBs = subtotalUSD * tasa;
+
+    return `
+        <div id="factura-print" style="font-family: Arial, sans-serif; padding:20px; color:#333; max-width:600px; margin:auto; background:#fff; border:1px solid #ccc;">
+            <div style="text-align:center; border-bottom:2px solid #e63946; padding-bottom:10px; margin-bottom:15px;">
+                <h2 style="margin:0; color:#1d3557;">Emprendimiento Saul Taly</h2>
+                <p style="margin:2px 0; font-size:0.85rem;">RIF: ${currentConfig.rif || 'J-504752800'}</p>
+                <small>¡¡Productos naturales para tu salud!!</small>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:0.85rem;">
+                <div>
+                    <strong>CLIENTE:</strong> ${pedido.cliente.nombre}<br>
+                    <strong>C.I / RIF:</strong> ${pedido.cliente.cedula}<br>
+                    <strong>TELÉFONO:</strong> ${pedido.cliente.telefono}
+                </div>
+                <div style="text-align:right;">
+                    <strong>PEDIDO NRO:</strong> ${pedido.idPedido}<br>
+                    <strong>FECHA:</strong> ${new Date(pedido.fechaRegistro).toLocaleDateString()}<br>
+                    <strong>ESTADO:</strong> <span style="color:green; font-weight:bold;">APROBADO</span>
+                </div>
+            </div>
+
+            <table style="width:100%; border-collapse:collapse; margin-bottom:15px; font-size:0.85rem; color:#000;">
+                <thead>
+                    <tr style="background:#f8f9fa;">
+                        <th style="padding:6px; border:1px solid #ddd; text-align:left;">Producto</th>
+                        <th style="padding:6px; border:1px solid #ddd; text-align:center;">Cant.</th>
+                        <th style="padding:6px; border:1px solid #ddd; text-align:right;">P.Unit ($)</th>
+                        <th style="padding:6px; border:1px solid #ddd; text-align:right;">Total ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tablaFilas}
+                </tbody>
+            </table>
+
+            <div style="text-align:right; font-size:0.9rem; border-top:1px solid #ddd; padding-top:10px;">
+                <p style="margin:3px 0;"><strong>TOTAL USD:</strong> $${subtotalUSD.toFixed(2)}</p>
+                <p style="margin:3px 0;"><strong>TASA BCV:</strong> ${tasa.toFixed(2)} Bs/$</p>
+                <h3 style="margin:5px 0; color:#e63946;">TOTAL BS: ${totalBs.toFixed(2)} Bs</h3>
+            </div>
+
+            <div style="margin-top:20px; font-size:0.75rem; text-align:center; color:#777;">
+                <p>Forma de Pago: ${pedido.pago.metodo} (Ref: ${pedido.pago.referencia})</p>
+                <p>¡Gracias por su compra!</p>
+            </div>
+        </div>
+    `;
+}
+
+function verReciboDigital(orderId) {
+    db.ref(`pedidos/${orderId}`).once('value').then(snapshot => {
+        const pedido = snapshot.val();
+
+        if (!pedido || !pedido.facturaHtml) {
+            alert("La factura aún no se encuentra disponible.");
+            return;
+        }
+
+        // Abre una ventana limpia con la factura para ver o imprimir
+        const ventana = window.open('', '_blank');
+        ventana.document.write(`
+            <html>
+                <head>
+                    <title>Factura ${orderId} - Emprendimiento Saul Taly</title>
+                </head>
+                <body onload="window.print()">
+                    ${pedido.facturaHtml}
+                </body>
+            </html>
+        `);
+        ventana.document.close();
+    }).catch(err => {
+        alert("Error al cargar la factura: " + err.message);
+    });
+}
+function normalizarTexto(texto) {
+    if (!texto) return "";
+    return texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Remueve tildes (ej: Maní -> mani)
+        .trim();
+}
+
+function obtenerStockPorNombre(nombreProducto) {
+    if (!nombreProducto || !listaInsumos || listaInsumos.length === 0) return 0;
+
+    const prodLimpio = normalizarTexto(nombreProducto);
+
+    // 1. Detección de porciones en gramos (g) o mililitros (ml) Ej: "50g", "250 ml", "500ml"
+    const matchPorcion = prodLimpio.match(/(\d+(?:\.\d+)?)\s*(g|ml)\b/);
+
+    if (matchPorcion) {
+        const porcion = parseFloat(matchPorcion[1]); // Extrae la cantidad (Ej: 50, 250, 500)
+
+        // Extraer la primera palabra para identificar el insumo (Ej: "miel", "merey", "mani")
+        const palabraClave = prodLimpio.split(' ')[0];
+
+        // Buscar en la base de datos de insumos
+        const insumoMateriaPrima = listaInsumos.find(insumo => {
+            if (!insumo || !insumo.n) return false;
+            const insumoLimpio = normalizarTexto(insumo.n);
+            return insumoLimpio.includes(palabraClave);
+        });
+
+        if (insumoMateriaPrima) {
+            const stockTotal = parseFloat(insumoMateriaPrima.s || 0); // Ej: 8.675 (Kg o Litros)
+
+            // Convertir Kg/Litros a Gramos/Mililitros
+            const stockEnUnidadesMenores = stockTotal * 1000;
+
+            // Calcular cuántos frascos/empaques salen
+            return Math.floor(stockEnUnidadesMenores / porcion);
+        }
+    }
+
+    // 2. Búsqueda directa por coincidencia de palabras (para productos sin porciones o directos)
+    const insumoDirecto = listaInsumos.find(insumo => {
+        if (!insumo || !insumo.n) return false;
+        const insumoLimpio = normalizarTexto(insumo.n);
+
+        // Compara si comparten la primera palabra clave principal (Ej: "miel")
+        const primeraPalabraProd = prodLimpio.split(' ')[0];
+        const primeraPalabraInsumo = insumoLimpio.split(' ')[0];
+
+        return primeraPalabraProd === primeraPalabraInsumo ||
+               prodLimpio.includes(insumoLimpio) ||
+               insumoLimpio.includes(prodLimpio);
+    });
+
+    return insumoDirecto ? parseFloat(insumoDirecto.s || 0) : 0;
+}
+
+ async function fetchTasaBCV() {
+    const urlPrincipal = 'https://pydolarve.org/api/v1/dollar?monitor=bcv';
+    const urlRespaldo = 'https://ve.dolarapi.com/v1/dolares/oficial';
+
+    // 1. Intentar con la API Principal (PyDolarVE)
+    try {
+        const response = await fetch(urlPrincipal, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Error HTTP Principal: ${response.status}`);
+
+        const data = await response.json();
+        const tasaOficial = data.price;
+
+        if (tasaOficial && tasaOficial > 0) {
+            await db.ref('config/tasa').set(tasaOficial);
+            console.log("Tasa BCV actualizada (API Principal):", tasaOficial);
+            return; // Éxito en la principal, termina la función
+        }
+        throw new Error("Respuesta inválida de la API Principal");
+    } catch (errorPrincipal) {
+        console.warn("Falla en API principal, intentando con API de respaldo...", errorPrincipal.message);
+    }
+
+    // 2. Intentar con la API de Respaldo (DolarApi VE)
+    try {
+        const responseRespaldo = await fetch(urlRespaldo, { cache: 'no-store' });
+        if (!responseRespaldo.ok) throw new Error(`Error HTTP Respaldo: ${responseRespaldo.status}`);
+
+        const dataRespaldo = await responseRespaldo.json();
+        // DolarApi entrega el precio en el campo dataRespaldo.promedio
+        const tasaRespaldo = dataRespaldo.promedio;
+
+        if (tasaRespaldo && tasaRespaldo > 0) {
+            await db.ref('config/tasa').set(tasaRespaldo);
+            console.log("Tasa BCV actualizada (API Respaldo):", tasaRespaldo);
+        } else {
+            console.error("No se pudo obtener un valor válido de la API de respaldo.");
+        }
+    } catch (errorRespaldo) {
+        console.error("Error crítico: Fallaron ambas APIs para obtener la tasa del BCV.", errorRespaldo);
+    }
+}
+ db.ref('config').on('value', s => {
+    currentConfig = s.val() || { tasa: 1, rif: '', logo: '', desc: '' };
+
+    // Vistas públicas
+    if(document.getElementById('tasa-view')) document.getElementById('tasa-view').innerText = parseFloat(currentConfig.tasa || 0).toFixed(2);
+    if(document.getElementById('rif-view')) document.getElementById('rif-view').innerText = "RIF: " + (currentConfig.rif || "");
+    if(document.getElementById('view-desc')) document.getElementById('view-desc').innerText = currentConfig.desc || "";
+
+    // Campos del Panel Admin
+    if(document.getElementById('adm-tasa')) document.getElementById('adm-tasa').value = currentConfig.tasa || "";
+    if(document.getElementById('adm-rif')) document.getElementById('adm-rif').value = currentConfig.rif || "";
+    if(document.getElementById('adm-desc')) document.getElementById('adm-desc').value = currentConfig.desc || "";
+    if(document.getElementById('adm-logo-url')) document.getElementById('adm-logo-url').value = currentConfig.logo || "";
+
+    // Métodos de Pago Admin
+    if(document.getElementById('adm-pago-movil')) document.getElementById('adm-pago-movil').value = currentConfig.pagoMovil || "";
+    if(document.getElementById('adm-transferencia')) document.getElementById('adm-transferencia').value = currentConfig.transferencia || "";
+    if(document.getElementById('adm-bnc')) document.getElementById('adm-bnc').value = currentConfig.bnc || "";
+    if(document.getElementById('adm-binance')) document.getElementById('adm-binance').value = currentConfig.binance || "";
+
+    // Carga exclusiva de Logo desde URL de Configuración
+    const logoImg = document.getElementById('logo-img');
+    const logoTxt = document.getElementById('logo-txt');
+
+    if (logoImg) {
+        if (currentConfig.logo && currentConfig.logo.trim() !== "") {
+            // Si hay una URL guardada en la configuración, la usa directamente
+            logoImg.src = currentConfig.logo;
+            logoImg.style.display = 'block';
+            if (logoTxt) logoTxt.style.display = 'none';
+        } else {
+            // Si no hay URL en la configuración, oculta la etiqueta <img>
+            logoImg.src = "";
+            logoImg.style.display = 'none';
+            if (logoTxt) logoTxt.style.display = 'block';
+        }
+    }
+
+    render();
+});
+
+    db.ref('productos').on('value', s => {
+        const data = s.val();
+        currentItems = data ? Object.values(data) : [];
+        render();
+        initSlider();
+    });
+
+    function quickSearch(termino) {
+    document.getElementById('busqueda').value = termino;
+    // Forzamos el render con scroll porque el usuario hizo un clic explícito
+    render(true);
+}
+
+function render(debeMoverPantalla = false) {
+    const inputBusqueda = document.getElementById('busqueda');
+    if(!inputBusqueda) return;
+
+    const busqueda = inputBusqueda.value.toLowerCase().trim();
+    const grid = document.getElementById('main-grid');
+    grid.innerHTML = "";
+
+    let encontrados = 0;
+    currentItems.forEach(p => {
+        if (p.n.toLowerCase().includes(busqueda)) {
+            const itemInCart = cart[p.id];
+            const qtyDisplay = itemInCart ? `<div class="qty-badge">${itemInCart.c} ${itemInCart.u}</div>` : "";
+            const btnTrash = itemInCart ? `<button onclick="deleteCartItem('${p.id}')" style="background:#dc3545; color:white; border:none; padding:10px 12px; border-radius:15px; margin-top:10px; cursor:pointer; font-size:0.9rem;" title="Quitar producto">🗑️</button>` : "";
+
+            // --- LÓGICA DE STOCK DE INSUMOS ---
+            const stockDisponible = obtenerStockPorNombre(p.n);
+            const badgeStock = `<span style="background:${stockDisponible > 0 ? '#28a745' : '#dc3545'}; color:white; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:bold; display:inline-block; margin-top:4px;">
+                Stock: ${stockDisponible} ${p.tipo === 'peso' ? 'Kg' : 'Und'}
+            </span>`;
+
+            grid.innerHTML += `
+                <div class="card" id="prod-${p.id}">
+                    ${qtyDisplay}
+                    <div class="img-wrap" onclick="openProductDetail('${p.id}')">
+                        <img src="${p.i || 'https://via.placeholder.com/150'}">
+                    </div>
+                    <div>
+                        <h4 style="margin:5px 0">${p.n}</h4>
+                        ${badgeStock}
+                        <span class="price-bs">${(p.p * (currentConfig.tasa || 1)).toFixed(2)} Bs</span>
+                        <small style="color:grey;">$${p.p} / ${p.tipo==='peso'?'Kg':'Und'}</small>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-add-grid" onclick="openProductDetail('${p.id}')" style="flex:1;">Añadir al Carrito</button>
+                        ${btnTrash}
+                    </div>
+                </div>`;
+            encontrados++;
+        }
+        // Dentro de la función render() al construir la tarjeta:
+const stockDisponible = obtenerStockPorNombre(p.n);
+const sinStock = stockDisponible <= 0;
+
+const badgeStock = `<span style="background:${sinStock ? '#dc3545' : '#28a745'}; color:white; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:bold; display:inline-block; margin-top:4px;">
+    ${sinStock ? 'Agotado' : 'Stock: ' + stockDisponible + ' ' + (p.tipo === 'peso' ? 'Kg' : 'Und')}
+</span>`;
+
+const btnAdd = sinStock
+    ? `<button disabled style="flex:1; background:#888; color:white; border:none; padding:10px; border-radius:12px; cursor:not-allowed;">Agotado</button>`
+    : `<button class="btn-add-grid" onclick="openProductDetail('${p.id}')" style="flex:1;">Añadir al Carrito</button>`;
+    });
+
+    if (debeMoverPantalla && encontrados > 0) {
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    updateCartUI();
+
+    const admBody = document.getElementById('adm-body');
+    if(admBody) {
+        admBody.innerHTML = "";
+        currentItems.forEach(p => {
+            const stock = obtenerStockPorNombre(p.n);
+            admBody.innerHTML += `<tr><td>${p.n} (Stock: ${stock})</td><td><button onclick="editProd('${p.id}')" style="color:cyan;background:none;border:none;">Edit</button> <button onclick="deleteProd('${p.id}')" style="color:red;background:none;border:none;">X</button></td></tr>`;
+        });
+    }
+}
+
+function deleteCartItem(id) {
+    delete cart[id];
+    render(); // Al llamar render() se actualizará la cuadrícula y automáticamente el resumen del carrito.
+}
+
+async function procesarPedido(event) {
+    event.preventDefault();
+
+    // 1. Verificar que el carrito no esté vacío
+    if (Object.keys(cart).length === 0) {
+        alert("⚠️ Tu carrito de compras está vacío.");
+        return;
+    }
+
+    // 2. Obtener datos del cliente (Firebase Auth / Perfil)
+    let nombreCliente = "Cliente";
+    let cedulaCliente = "No registrada";
+    let telefonoCliente = "No registrado";
+
+    if (auth.currentUser) {
+        try {
+            const snap = await db.ref('usuarios/' + auth.currentUser.uid).once('value');
+            const userDb = snap.val();
+            if (userDb) {
+                nombreCliente = userDb.nombre || nombreCliente;
+                cedulaCliente = userDb.cedula || cedulaCliente;
+                telefonoCliente = userDb.celular || telefonoCliente;
+            }
+        } catch (e) {
+            console.error("Error leyendo datos del usuario:", e);
+        }
+    }
+
+    // 3. Capturar datos del formulario de pago
+    const metodo = document.getElementById('pagoMetodo').value;
+    const bancoOrigen = document.getElementById('pagoBancoOrigen').value.trim();
+    const referencia = document.getElementById('pagoReferencia').value.trim();
+    const montoBs = document.getElementById('pagoMontoBs').value;
+
+    // Totales calculados
+    const totalUSD = document.getElementById('modal-total-usd').innerText;
+    const totalBs = document.getElementById('modal-total-bs').innerText;
+
+    // 4. Construir el mensaje formateado para WhatsApp
+    let m = "*🧾 NUEVO PEDIDO Y REPORTE DE PAGO*%0A";
+    m += "*Emprendimiento Saul Taly*%0A";
+    m += "----------------------------------------------------%0A";
+    m += `👤 *Cliente:* ${nombreCliente}%0A`;
+    m += `🆔 *Cédula:* ${cedulaCliente}%0A`;
+    m += `📞 *Teléfono:* ${telefonoCliente}%0A`;
+    m += "----------------------------------------------------%0A";
+    m += "*📦 DETALLE DEL PEDIDO:*%0A";
+
+    for (let id in cart) {
+        m += `• ${cart[id].n} (x${cart[id].c} ${cart[id].u}) -> $${(cart[id].p * cart[id].c).toFixed(2)}%0A`;
+    }
+
+    m += "%0A";
+    m += `💵 *Total a Pagar (USD):* ${totalUSD}%0A`;
+    m += `🇻🇪 *Total a Pagar (Bs):* ${totalBs}%0A`;
+    m += "----------------------------------------------------%0A";
+    m += "*💳 DATOS DEL PAGO REALIZADO:*%0A";
+    m += `🔹 *Método:* ${metodo === 'pago_movil' ? 'Pago Móvil' : 'Transferencia'}%0A`;
+    m += `🏦 *Banco Origen:* ${bancoOrigen}%0A`;
+    m += `🔢 *Nº Referencia:* ${referencia}%0A`;
+    m += `💰 *Monto Reportado:* Bs. ${montoBs}%0A%0A`;
+    m += `_Por favor, confirme la recepción del pago para despachar el pedido._`;
+
+    // 5. Enviar URL a WhatsApp (Redirección compatible con WebView / Cordova)
+    const urlWS = "https://wa.me/584126950652?text=" + m;
+
+    // Limpiar carrito y cerrar modal tras procesar
+    cart = {};
+    updateCartUI();
+    cerrarModalCheckout();
+
+    window.location.href = urlWS;
+}
+
+// Variable para almacenar la imagen del comprobante en Base64
+let capturaBase64 = "";
+
+// Previsualización de la captura del comprobante
+function previsualizarCaptura(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            capturaBase64 = e.target.result;
+            const imgElement = document.getElementById('imgPreview');
+            imgElement.src = capturaBase64;
+            imgElement.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Función auxiliar para copiar texto al portapapeles
+function copiarTexto(texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+        alert("Copiado: " + texto);
+    }).catch(() => {
+        alert("Error al copiar");
+    });
+}
+
+// Abrir Modal Checkout con vista inicial de Datos Bancarios
+async function abrirModalCheckout() {
+    if (Object.keys(cart).length === 0) return alert("El carrito está vacío.");
+
+    // Resetear a Paso 1 (Datos Bancarios)
+    document.getElementById('paso-datos-pago').style.display = 'block';
+    document.getElementById('paso-formulario-pago').style.display = 'none';
+
+    // 1. Calcular Totales y renderizar resumen de la compra
+    let totalUSD = 0;
+    let listaHtml = "";
+
+    for (let id in cart) {
+        let sub = cart[id].p * cart[id].c;
+        totalUSD += sub;
+        listaHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #eee; padding-bottom:4px; font-size:0.85rem;">
+            <div><b>${cart[id].n}</b> (x${cart[id].c} ${cart[id].u})</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <b>$${sub.toFixed(2)}</b>
+                <button onclick="eliminarDelCheckout('${id}')" style="background:#fff0f1; border:1px solid #ffccd5; color:#dc3545; padding:2px 6px; border-radius:6px; cursor:pointer; font-size:0.85rem;" title="Quitar producto">🗑️</button>
+            </div>
+        </div>`;
+    }
+
+    let totalBs = totalUSD * (currentConfig.tasa || 1);
+
+    document.getElementById('checkoutTotalUSD').innerText = totalUSD.toFixed(2);
+    document.getElementById('checkoutTotalBs').innerText = totalBs.toFixed(2);
+    document.getElementById('checkoutListaProductos').innerHTML = listaHtml;
+
+    // 2. Cargar datos bancarios según el método seleccionado por defecto
+    cambiarMetodoPagoVisual();
+
+    // 3. Autocompletar datos del usuario si ha iniciado sesión
+    if (auth.currentUser) {
+        try {
+            const snap = await db.ref('usuarios/' + auth.currentUser.uid).once('value');
+            const u = snap.val();
+            if (u) {
+                document.getElementById('cliNombre').value = u.nombre || "";
+                document.getElementById('cliCedula').value = u.cedula || "";
+                document.getElementById('cliTelefono').value = u.celular || "";
+            }
+        } catch (e) {
+            console.error("Error cargando perfil para checkout:", e);
+        }
+    }
+// Asegúrate de incluir esto dentro de tu función abrirModalCheckout():
+if (document.getElementById('opcionEnvioSel')) {
+    document.getElementById('opcionEnvioSel').value = 'retiro';
+    cambiarOpcionEnvio();
+}
+    toggleCart(false);
+
+    document.getElementById('modalCheckout').style.display = 'block';
+}
+
+// Mostrar Formulario tras hacer clic en "¡Ya pagué!" (Paso 2)
+function mostrarFormularioPago() {
+    document.getElementById('paso-datos-pago').style.display = 'none';
+    document.getElementById('paso-formulario-pago').style.display = 'block';
+
+    // Auto-completar fecha de hoy
+    if(document.getElementById('pagoFecha')) {
+        document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
+    }
+}
+
+// Volver al Paso 1 desde el formulario
+function volverADatosPago() {
+    document.getElementById('paso-formulario-pago').style.display = 'none';
+    document.getElementById('paso-datos-pago').style.display = 'block';
+}
+
+function cerrarModalCheckout() {
+    document.getElementById('modalCheckout').style.display = 'none';
+    capturaBase64 = "";
+    const imgElement = document.getElementById('imgPreview');
+    if(imgElement) {
+        imgElement.src = "";
+        imgElement.style.display = 'none';
+    }
+}
+// Función auxiliar para eliminar un ítem directamente desde la ventana de checkout
+function eliminarDelCheckout(id) {
+    delete cart[id];
+    render(); // Actualiza la interfaz global y las cantidades
+    if (Object.keys(cart).length === 0) {
+        cerrarModalCheckout();
+        alert("El carrito quedó vacío.");
+    } else {
+        abrirModalCheckout(); // Recalcula los totales del resumen
+    }
+}
+// Guardar Pedido en Firebase Realtime Database sin redirección automática a WhatsApp
+function registrarPedidoEnFirebase() {
+    const nombre = document.getElementById('cliNombre').value.trim();
+    const cedula = document.getElementById('cliCedula').value.trim();
+    const telefono = document.getElementById('cliTelefono').value.trim();
+    const banco = document.getElementById('pagoBancoOrigen').value;
+    const referencia = document.getElementById('pagoReferencia').value.trim();
+    const fecha = document.getElementById('pagoFecha').value;
+    const metodoPagoSel = document.getElementById('pagoMetodoSelect').value;
+
+    // --- Captura de Envíos ---
+    const metodoEnvio = document.getElementById('opcionEnvioSel').value;
+    const direccionDelivery = document.getElementById('envioDireccionExacta').value.trim();
+    const agenciaMRW = document.getElementById('envioAgenciaMRW').value.trim();
+
+    if (!nombre || !cedula || !telefono || !referencia || !fecha) {
+        alert("Por favor completa todos los campos obligatorios (*).");
+        return;
+    }
+
+    if (metodoEnvio === 'delivery' && !direccionDelivery) {
+        alert("Por favor ingresa la ubicación exacta o enlace de Google Maps para el Delivery.");
+        return;
+    }
+    if (metodoEnvio === 'mrw' && !agenciaMRW) {
+        alert("Por favor indica la agencia MRW más cercana para realizar el envío.");
+        return;
+    }
+
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const orderId = `PED-2026-${randomNum}`;
+    const totalUSD = parseFloat(document.getElementById('checkoutTotalUSD').innerText);
+    const totalBs = parseFloat(document.getElementById('checkoutTotalBs').innerText);
+    const uidCliente = auth.currentUser ? auth.currentUser.uid : "INVITADO";
+
+    const pedidoPayload = {
+        idPedido: orderId,
+        uidCliente: uidCliente,
+        cliente: {
+            nombre: nombre,
+            cedula: cedula,
+            telefono: telefono
+        },
+        envio: {
+            modalidad: metodoEnvio, // 'retiro', 'delivery', o 'mrw'
+            detalle: metodoEnvio === 'delivery' ? direccionDelivery : (metodoEnvio === 'mrw' ? agenciaMRW : 'Retiro en Tienda Física')
+        },
+        items: cart,
+        pago: {
+            metodo: metodoPagoSel,
+            bancoOrigen: banco,
+            referencia: referencia,
+            montoUSD: totalUSD,
+            montoBs: totalBs,
+            fechaPago: fecha,
+            comprobante: capturaBase64 || null,
+            estado: "PENDIENTE" // Pasa a Verificación
+        },
+        fechaRegistro: new Date().toISOString()
+    };
+
+    db.ref('pedidos/' + orderId).set(pedidoPayload)
+        .then(() => {
+            // 1. Notificación en el Centro de Notificaciones del Administrador
+            db.ref('notificaciones_admin').push({
+                titulo: "🚨 Nuevo Pedido Recibido",
+                mensaje: `El pedido ${orderId} de ${nombre} por $${totalUSD.toFixed(2)} se encuentra en verificación.`,
+                fecha: new Date().toISOString(),
+                leido: false,
+                idPedido: orderId
+            });
+
+            // 2. Notificación en el Centro de Notificaciones del Cliente
+            if (uidCliente !== "INVITADO") {
+                db.ref(`notificaciones_cliente/${uidCliente}`).push({
+                    titulo: "⏳ Pedido en Verificación",
+                    mensaje: `Tu pedido ${orderId} ha sido registrado. Estamos verificando los datos de pago y envío.`,
+                    fecha: new Date().toISOString(),
+                    leido: false
+                });
+            }
+
+            // 3. Notificación Local / Push a la barra del sistema (vía Cordova LocalNotification)
+            enviarNotificacionTelefono("🚨 Nuevo Pedido Registrado", `Pedido ${orderId} listo para verificación.`);
+
+            alert(`¡Excelente! Tu pedido ${orderId} ha entrado en estado de VERIFICACIÓN.`);
+
+            cart = {};
+            if (typeof render === 'function') render();
+            cerrarModalCheckout();
+        })
+        .catch((error) => {
+            console.error("Error al registrar pedido:", error);
+            alert("Ocurrió un error al procesar la solicitud: " + error.message);
+        });
+}
+function openProductDetail(id) {
+    const p = currentItems.find(x => x.id === id);
+    const modal = document.getElementById('product-modal');
+    const content = document.getElementById('product-detail-content');
+    const isPeso = p.tipo === 'peso';
+    const currentQty = cart[id] ? cart[id].c : "";
+    const stockDisponible = obtenerStockPorNombre(p.n);
+    const sinStock = stockDisponible <= 0;
+
+    content.innerHTML = `
+        <span style="position:absolute; top:15px; right:20px; font-size:25px; cursor:pointer;" onclick="closeProductModal()">&times;</span>
+        <div style="text-align:center;">
+            <img src="${p.i || 'https://via.placeholder.com/150'}" style="width:100%; max-height:250px; object-fit:contain; border-radius:15px;">
+            <h2 style="margin:15px 0 5px;">${p.n}</h2>
+
+            <div style="margin-bottom:10px;">
+                <span style="background:${sinStock ? '#dc3545' : '#28a745'}; color:white; padding:4px 12px; border-radius:12px; font-size:0.85rem; font-weight:bold;">
+                    ${sinStock ? 'Producto Agotado' : 'Stock Disponible: ' + stockDisponible + ' ' + (isPeso ? 'Kg' : 'Und')}
+                </span>
+            </div>
+
+            <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">${p.d || 'Sin descripción disponible.'}</p>
+
+            <div style="background:var(--gris-claro); padding:15px; border-radius:15px; margin-bottom:20px;">
+                <span style="font-size:1.2rem; font-weight:bold; color:var(--rojo);">${(p.p * currentConfig.tasa).toFixed(2)} Bs</span><br>
+                <small>$${p.p} por ${isPeso ? 'Kg' : 'Unidad'}</small>
+            </div>
+
+            ${sinStock ? `<p style="color:red; font-weight:bold;">No hay stock disponible de este producto por el momento.</p>` : `
+                <label style="font-weight:600; display:block; margin-bottom:10px;">¿Qué cantidad desea añadir?</label>
+                <input type="number" id="temp-qty" step="${isPeso?'0.1':'1'}" min="0.1" max="${stockDisponible}" value="${currentQty}" placeholder="Ej: ${isPeso?'0.5':'1'}" style="width:80%; padding:12px; border-radius:10px; border:2px solid var(--negro); text-align:center; font-size:1.1rem; margin-bottom:20px;">
+                <button class="btn-ws" style="width:100%;" onclick="confirmAdd('${p.id}')">Confirmar y Guardar</button>
+            `}
+        </div>`;
+    modal.style.display = 'block';
+}
+
+function confirmAdd(id) {
+    const p = currentItems.find(x => x.id === id);
+    const qtyInput = document.getElementById('temp-qty');
+    const val = parseFloat(qtyInput.value);
+    const stockDisponible = obtenerStockPorNombre(p.n);
+
+    if (isNaN(val) || val <= 0) {
+        alert("Por favor ingresa una cantidad válida.");
+        return;
+    }
+
+    if (val > stockDisponible) {
+        alert(`No hay suficiente stock. Disponible actualmente: ${stockDisponible}`);
+        return;
+    }
+
+    // Si pasa las validaciones, lo agrega al carrito
+    cart[id] = {
+        n: p.n,
+        p: p.p,
+        c: val,
+        u: p.tipo === 'peso' ? 'Kg' : 'Und'
+    };
+
+    closeProductModal();
+    render();
+}
+
+    function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+  function updateCartUI() {
+    let total = 0, count = 0;
+    const list = document.getElementById('cart-items-list');
+    list.innerHTML = "";
+
+    for (let id in cart) {
+        let sub = cart[id].p * cart[id].c;
+        total += sub;
+        count++;
+
+        list.innerHTML += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                <div>
+                    <b style="font-size:0.95rem;">${cart[id].n}</b><br>
+                    <small style="color:#666;">${cart[id].c} ${cart[id].u}</small>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="text-align:right;">
+                        <b style="color:var(--negro);">$${sub.toFixed(2)}</b><br>
+                        <small onclick="openProductDetail('${id}')" style="color:var(--rojo); cursor:pointer; font-weight:600;">Editar</small>
+                    </div>
+                    <button onclick="deleteCartItem('${id}')" style="background:#fff0f1; border:1px solid #ffccd5; color:#dc3545; padding:6px 10px; border-radius:8px; font-size:1.1rem; cursor:pointer; transition:0.2s;" title="Eliminar producto">
+                        🗑️
+                    </button>
+                </div>
+            </div>`;
+    }
+
+    if (count === 0) {
+        list.innerHTML = `<p style="text-align:center; color:#888; margin:20px 0;">El carrito está vacío 🛒</p>`;
+    }
+
+    document.getElementById('cart-count').innerText = count;
+    document.getElementById('total-view').innerText = `$${total.toFixed(2)}`;
+    document.getElementById('modal-total-usd').innerText = `$${total.toFixed(2)}`;
+    document.getElementById('modal-total-bs').innerText = (total * (currentConfig.tasa || 1)).toFixed(2) + " Bs";
+}
+
+    function toggleCart(show) { document.getElementById('cart-modal').style.display = show ? 'block' : 'none'; }
+
+    // FUNCIÓN DE WHATSAPP DEFINITIVA
+   // FUNCIÓN DE WHATSAPP DEFINITIVA (PARA KOTLIN)
+function sendWS() {
+    if(Object.keys(cart).length === 0) return alert("El carrito está vacío.");
+
+    let m = "*🛍️ NUEVO PEDIDO - EMPRENDIMIENTO SAUL TALY*%0A----------------------------------------------------%0A";
+    for(let id in cart) {
+        m += `*• ${cart[id].n}* x${cart[id].c} ${cart[id].u}%0A`;
+    }
+    m += `%0A💵 *TOTAL USD:* ${document.getElementById('modal-total-usd').innerText}%0A`;
+    m += `🇻🇪 *TOTAL BS:* ${document.getElementById('modal-total-bs').innerText}%0A%0A`;
+    m += `💳 _Por favor, confírmeme disponibilidad y los datos de pago._`;
+
+    let url = "https://wa.me/584126950652?text=" + m;
+
+    // Al asignar la URL a window.location.href, Kotlin la captura en shouldOverrideUrlLoading
+    window.location.href = url;
+}
+
+    function initSlider() {
+        const track = document.getElementById('slider-track'); track.innerHTML = "";
+        currentItems.forEach((p, index) => { if (p.i) track.innerHTML += `<div class="slide"><div class="view-fs-btn" onclick="openSaulTalyFS(${index})">🔍</div><img src="${p.i}" onclick="openProductDetail('${p.id}')"><div class="slide-info"><b>${p.n}</b></div></div>`; });
+        startAutoSlide();
+    }
+
+    function openSaulTalyFS(index) {
+        const slides = currentItems.filter(p => p.i); if (slides.length === 0) return;
+        currentFsIndex = index; updateFsImage(slides); document.getElementById('fs-overlay').style.display = 'flex';
+        clearInterval(fsInterval); fsInterval = setInterval(() => { currentFsIndex = (currentFsIndex + 1) % slides.length; updateFsImage(slides); }, 4000);
+    }
+
+    function updateFsImage(slides) { const fullImg = document.getElementById('fs-img-src'); fullImg.style.opacity = 0; setTimeout(() => { fullImg.src = slides[currentFsIndex].i; fullImg.style.opacity = 1; }, 200); }
+    function closeSaulTalyFS() { document.getElementById('fs-overlay').style.display = 'none'; clearInterval(fsInterval); }
+    function moveSlide(dir) { clearInterval(autoSlide); slideIndex = (slideIndex + dir + currentItems.length) % currentItems.length; document.getElementById('slider-track').style.transform = `translateX(-${slideIndex * 100}%)`; startAutoSlide(); }
+    function startAutoSlide() { clearInterval(autoSlide); autoSlide = setInterval(() => { if(currentItems.length > 1) moveSlide(1); }, 4000); }
+
+   function startHold() {
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => {
+        const currentUser = auth.currentUser;
+
+        // 1. Validar que exista un usuario autenticado
+        if (!currentUser || !currentUser.email) {
+            alert("⚠️ Acceso denegado: Debes iniciar sesión con tu cuenta.");
+            return;
+        }
+
+        const userEmail = currentUser.email.toLowerCase().trim();
+
+        // 2. Consultar directamente los correos en la base de datos de Firebase
+        db.ref('administradores').once('value')
+        .then((snapshot) => {
+            if (!snapshot.exists()) {
+                alert("⚠️ No existen administradores registrados en la base de datos.");
+                return;
+            }
+
+            const data = snapshot.val();
+            let esAdmin = false;
+
+            // Extraer y comparar la lista de correos desde Firebase
+            if (typeof data === 'object') {
+                const correosAutorizados = Object.values(data).map(email => String(email).toLowerCase().trim());
+                esAdmin = correosAutorizados.includes(userEmail);
+            }
+
+            // 3. Permitir o denegar el acceso
+            if (esAdmin) {
+                document.getElementById('admin-panel').style.display = 'block';
+                cargarPedidosAdmin('PENDIENTE');
+            } else {
+                alert("⚠️ Acceso denegado: Tu usuario no está autorizado como administrador.");
+            }
+        })
+        .catch((error) => {
+            console.error("Error al consultar la base de datos:", error);
+            alert("⚠️ Error de conexión al validar permisos.");
+        });
+
+    }, 2500);
+}
+function endHold() { clearTimeout(holdTimer); }
+
+    function uploadProd() {
+        const idInput = document.getElementById('edit-id').value;
+        const id = idInput || db.ref().child('productos').push().key;
+        db.ref('productos/' + id).set({ id: id, n: document.getElementById('add-n').value, d: document.getElementById('add-d').value, p: parseFloat(document.getElementById('add-p').value), tipo: document.getElementById('add-tipo').value, i: document.getElementById('add-img-url').value }).then(() => { alert("Producto Guardado"); clearForm(); });
+    }
+
+    function editProd(id) {
+        const p = currentItems.find(x => x.id === id);
+        document.getElementById('edit-id').value = p.id; document.getElementById('add-n').value = p.n; document.getElementById('add-d').value = p.d || ""; document.getElementById('add-p').value = p.p; document.getElementById('add-tipo').value = p.tipo; document.getElementById('add-img-url').value = p.i || "";
+        document.getElementById('form-title').innerText = "Editando Producto"; document.getElementById('btn-cancel').style.display = "block"; window.scrollTo(0,0);
+    }
+
+    function deleteProd(id) { if(confirm("¿Eliminar?")) db.ref('productos/' + id).remove(); }
+    function clearForm() { document.getElementById('edit-id').value = ""; document.getElementById('add-n').value = ""; document.getElementById('add-d').value = ""; document.getElementById('add-p').value = ""; document.getElementById('add-img-url').value = ""; document.getElementById('form-title').innerText = "Gestionar Producto"; document.getElementById('btn-cancel').style.display = "none"; }
+
+function saveGlobalConfig() {
+    const nuevaTasaInput = document.getElementById('adm-tasa').value;
+    const nuevaTasa = nuevaTasaInput !== "" ? parseFloat(nuevaTasaInput) : (currentConfig.tasa || 0);
+
+    const configActualizada = {
+        tasa: nuevaTasa,
+        rif: document.getElementById('adm-rif').value || "",
+        desc: document.getElementById('adm-desc').value || "",
+        logo: document.getElementById('adm-logo-url').value || "",
+        pagoMovil: document.getElementById('adm-pago-movil').value || "",
+        transferencia: document.getElementById('adm-transferencia').value || "",
+        bnc: document.getElementById('adm-bnc').value || "",
+        binance: document.getElementById('adm-binance').value || ""
+    };
+
+    db.ref('config').update(configActualizada).then(() => {
+        alert("✅ Configuración actualizada y resguardada con éxito");
+    }).catch(err => {
+        alert("❌ Error al actualizar la configuración: " + err.message);
+    });
+}
+
+    function exportarData() {
+        db.ref().once('value', s => {
+            const data = s.val();
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Respaldo_SaulTaly_${new Date().toLocaleDateString()}.json`;
+            a.click();
+        });
+    }
+
+    function importarData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (confirm("¿Seguro de cargar esta copia? Reemplazará los datos actuales.")) {
+                    db.ref().set(json).then(() => {
+                        alert("Base de Datos Restaurada con Éxito");
+                        location.reload();
+                    });
+                }
+            } catch (err) { alert("Error: Archivo no válido."); }
+        };
+        reader.readAsText(file);
+    }
+
+    function borrarTodo() {
+        if(confirm("⚠️ ATENCIÓN: ¿Seguro que quieres borrar TODOS los productos?")) {
+            db.ref('productos').remove().then(() => alert("Base de datos vaciada."));
+        }
+    }
+        // --- LÓGICA PROFESIONAL DEL BOTÓN ATRÁS (CORDOVA) ---
+    let lastTimeBackPress = 0;
+    let timePeriodToExit = 2000;
+
+    document.addEventListener("deviceready", function() {
+        document.addEventListener("backbutton", function(e) {
+
+            // 1. Cerrar Panel Admin si está abierto
+            const admin = document.getElementById('admin-panel');
+            if (admin && admin.style.display === 'block') {
+                admin.style.display = 'none';
+                return;
+            }
+
+            // 2. Cerrar Visor de Fotos (Full Screen)
+            const fs = document.getElementById('fs-overlay');
+            if (fs && fs.style.display === 'flex') {
+                closeSaulTalyFS();
+                return;
+            }
+
+            // 3. Cerrar Detalle de Producto
+            const pModal = document.getElementById('product-modal');
+            if (pModal && pModal.style.display === 'block') {
+                closeProductModal();
+                return;
+            }
+
+            // 4. Cerrar Carrito
+            const cModal = document.getElementById('cart-modal');
+            if (cModal && cModal.style.display === 'block') {
+                toggleCart(false);
+                return;
+            }
+
+            // 5. Si está scrolleado hacia abajo, subir al inicio
+            if (window.pageYOffset > 100) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // 6. Confirmación de salida (Doble toque en 2 segundos)
+            let cuurentTime = new Date().getTime();
+            if (cuurentTime - lastTimeBackPress < timePeriodToExit) {
+                navigator.app.exitApp(); // Sale de la aplicación
+            } else {
+                lastTimeBackPress = cuurentTime;
+                // Mostramos un aviso nativo de Android si el plugin está disponible
+                if(window.plugins && window.plugins.toast) {
+                    window.plugins.toast.showShortBottom('Presione atrás nuevamente para salir');
+                } else {
+                    alert("Presione atrás nuevamente para salir de Saul Taly");
+                }
+            }
+        }, false);
+    }, false);
+
+
+
+// Inicializar Auth
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+let esNuevoRegistro = false;
+let usuarioActualID = null;
+
+// Detectar sesión activa y cargar datos del usuario
+auth.onAuthStateChanged(user => {
+    const btnOpenAuth = document.getElementById('btn-open-auth');
+    const userActions = document.getElementById('user-actions');
+    const userInfo = document.getElementById('user-info');
+    const userName = document.getElementById('user-display-name');
+
+    if (user) {
+        usuarioActualID = user.uid;
+        if(btnOpenAuth) btnOpenAuth.style.display = 'none';
+        if(userActions) userActions.style.display = 'flex';
+        if(userInfo) userInfo.style.display = 'flex';
+
+        // Consultar el nombre guardado en Firebase Database
+        firebase.database().ref('usuarios/' + user.uid).once('value').then(snapshot => {
+            const datos = snapshot.val();
+            const nombreCompleto = datos && datos.nombre ? datos.nombre : (user.displayName || user.email.split('@')[0]);
+            if(userName) userName.innerText = "¡Bienvenido, " + nombreCompleto + "!";
+        });
+
+        toggleAuthModal(false);
+    } else {
+        usuarioActualID = null;
+        if(btnOpenAuth) btnOpenAuth.style.display = 'block';
+        if(userActions) userActions.style.display = 'none';
+        if(userInfo) userInfo.style.display = 'none';
+    }
+});
+
+function toggleAuthModal(show) {
+    document.getElementById('auth-modal').style.display = show ? 'block' : 'none';
+}
+
+function loginWithEmail() {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass = document.getElementById('auth-password').value;
+
+    if (!email || !pass) {
+        return alert("Por favor ingresa tu correo y contraseña.");
+    }
+
+    auth.signInWithEmailAndPassword(email, pass)
+        .then(() => toggleAuthModal(false))
+        .catch(err => alert("Error al iniciar sesión: " + err.message));
+}
+// Iniciar sesión / Registro con Google + Validación de Datos Obligatorios
+function loginWithGoogle() {
+  auth.signInWithPopup(googleProvider)
+    .then(async (result) => {
+      const user = result.user;
+      usuarioActualID = user.uid;
+
+      try {
+        const snapshot = await firebase.database().ref('usuarios/' + user.uid).once('value');
+
+        if (!snapshot.exists()) {
+          // --- ES UN USUARIO NUEVO ---
+          esNuevoRegistro = true;
+
+          // Precargar Nombre y Correo desde la cuenta de Google
+          document.getElementById('perfilNombre').value = user.displayName || '';
+          document.getElementById('perfilCorreo').value = user.email ? user.email.toLowerCase() : '';
+          document.getElementById('perfilCedulaNum').value = '';
+          document.getElementById('perfilCelular').value = '';
+          document.getElementById('perfilPassword').value = '';
+
+          // Mostrar el campo de contraseña
+          const passGroup = document.getElementById('perfilPasswordGroup');
+          if (passGroup) passGroup.style.display = 'block';
+
+          // Ocultar el modal de Login y abrir el modal de Perfil en modo OBLIGATORIO
+          toggleAuthModal(false);
+          abrirModalPerfil(true);
+
+          alert("👋 ¡Bienvenido/a! Para completar tu registro, ingresa tu cédula, teléfono y crea una contraseña.");
+        } else {
+          // --- USUARIO YA EXISTENTE ---
+          toggleAuthModal(false);
+          alert("✅ ¡Bienvenido de nuevo, " + (snapshot.val().nombre || user.displayName) + "!");
+        }
+      } catch (err) {
+        console.error("Error al consultar usuario en base de datos:", err);
+      }
+    })
+    .catch((error) => {
+      console.error("Error en Google Auth:", error);
+      alert("❌ Error al iniciar sesión con Google: " + error.message);
+    });
+}
+// Función para Cerrar Sesión
+function logoutClient() {
+    if (!auth.currentUser) {
+        return alert("No hay ninguna sesión activa.");
+    }
+
+    auth.signOut()
+        .then(() => {
+            alert("Sesión cerrada correctamente.");
+        })
+        .catch(err => {
+            alert("Error al cerrar sesión: " + err.message);
+        });
+}
+
+// Botón "Crear Cuenta Nueva": Abre el formulario directamente
+function registerWithEmail() {
+    toggleAuthModal(false);
+    esNuevoRegistro = true;
+
+    const passGroup = document.getElementById('perfilPasswordGroup');
+    if (passGroup) passGroup.style.display = 'block';
+
+    // Limpiar formulario
+    document.getElementById('formPerfil').reset();
+    abrirModalPerfil(false);
+}
+
+function abrirPerfilUsuario() {
+    if (!auth.currentUser) {
+        alert("Debes iniciar sesión para ver tu perfil.");
+        toggleAuthModal(true);
+        return;
+    }
+    esNuevoRegistro = false;
+    const passGroup = document.getElementById('perfilPasswordGroup');
+    if (passGroup) passGroup.style.display = 'none';
+
+    abrirModalPerfil(false);
+}
+
+function abrirModalPerfil(esObligatorio = false) {
+    const modal = document.getElementById('modalPerfil');
+    const btnCerrar = document.getElementById('btnCerrarModalPerfil');
+    const titulo = document.getElementById('modalPerfilTitulo');
+    const btnSubmit = document.getElementById('btnGuardarPerfil');
+    const contenedorTerminos = document.getElementById('contenedorTerminos');
+    const chkTerminos = document.getElementById('perfilAceptoTerminos');
+
+    if (esObligatorio) {
+        if (btnCerrar) btnCerrar.style.display = 'none';
+        if (titulo) titulo.innerText = '📋 Completa tus Datos Personales';
+    } else {
+        if (btnCerrar) btnCerrar.style.display = 'inline-block';
+        if (titulo) titulo.innerText = esNuevoRegistro ? '📋 Registrar Cuenta' : '✏️ Mi Perfil';
+        if (btnSubmit) btnSubmit.innerText = esNuevoRegistro ? '🚀 Registrarme' : '💾 Guardar Cambios';
+    }
+
+    if (usuarioActualID && !esNuevoRegistro) {
+        firebase.database().ref('usuarios/' + usuarioActualID).once('value').then((snapshot) => {
+            const datos = snapshot.val() || {};
+
+            document.getElementById('perfilNombre').value = datos.nombre || '';
+            document.getElementById('perfilCorreo').value = datos.correo || '';
+            document.getElementById('perfilCelular').value = datos.celular || '';
+
+            if (datos.cedula) {
+                const partes = datos.cedula.split('-');
+                if (partes.length === 2) {
+                    document.getElementById('perfilTipoCedula').value = partes[0] + '-';
+                    document.getElementById('perfilCedulaNum').value = partes[1];
+                }
+            }
+
+            // Ocultar el bloque de términos si ya los aceptó anteriormente
+            if (datos.aceptoTerminosLegales) {
+                if (contenedorTerminos) contenedorTerminos.style.display = 'none';
+            } else {
+                if (contenedorTerminos) contenedorTerminos.style.display = 'block';
+                if (chkTerminos) chkTerminos.checked = false;
+            }
+
+            modal.style.display = 'flex';
+        });
+    } else {
+        // En un nuevo registro siempre debe aceptarlos
+        if (contenedorTerminos) contenedorTerminos.style.display = 'block';
+        if (chkTerminos) chkTerminos.checked = false;
+        modal.style.display = 'flex';
+    }
+}
+
+function cerrarModalPerfil() {
+  document.getElementById('modalPerfil').style.display = 'none';
+}
+
+// Abrir y Cerrar Modal de Términos
+function abrirModalTerminos(e) {
+    if(e) e.preventDefault();
+    document.getElementById('modalTerminosLegales').style.display = 'block';
+}
+
+function cerrarModalTerminos() {
+    document.getElementById('modalTerminosLegales').style.display = 'none';
+}
+
+async function guardarDatosPerfil(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById('perfilNombre').value.trim();
+    const tipoCedula = document.getElementById('perfilTipoCedula').value;
+    const numCedula = document.getElementById('perfilCedulaNum').value.trim();
+    const cedulaCompleta = tipoCedula + numCedula;
+    const correo = document.getElementById('perfilCorreo').value.trim().toLowerCase();
+    const celular = document.getElementById('perfilCelular').value.trim();
+    const pass = document.getElementById('perfilPassword').value;
+
+    const contenedorTerminos = document.getElementById('contenedorTerminos');
+    const chkTerminos = document.getElementById('perfilAceptoTerminos');
+    const terminosVisibles = contenedorTerminos && contenedorTerminos.style.display !== 'none';
+
+    if (!numCedula) {
+        return alert("Por favor ingresa un número de cédula válido.");
+    }
+
+    // Validar la aceptación únicamente cuando el bloque sea visible
+    if (terminosVisibles && (!chkTerminos || !chkTerminos.checked)) {
+        return alert("⚠️ Para registrarte debes leer y aceptar los Términos, Condiciones y la Exención de Responsabilidad Legal bajo las leyes venezolanas.");
+    }
+
+    // 1. Verificar disponibilidad de Cédula, Correo y Celular en Firebase Database
+    try {
+        const snapshot = await firebase.database().ref('usuarios').once('value');
+        const usuarios = snapshot.val() || {};
+
+        for (let key in usuarios) {
+            if (!esNuevoRegistro && key === usuarioActualID) continue;
+
+            const u = usuarios[key];
+
+            if (u.cedula && u.cedula.toUpperCase() === cedulaCompleta.toUpperCase()) {
+                alert("⚠️ La cédula " + cedulaCompleta + " ya está registrada en el sistema.");
+                return;
+            }
+
+            if (u.correo && u.correo.toLowerCase() === correo) {
+                alert("⚠️ El correo '" + correo + "' ya se encuentra registrado.");
+                return;
+            }
+
+            if (u.celular && u.celular === celular) {
+                alert("⚠️ El número de celular '" + celular + "' ya se encuentra registrado.");
+                return;
+            }
+        }
+    } catch (err) {
+        console.error("Error al verificar disponibilidad:", err);
+        return alert("Error al conectar con la base de datos.");
+    }
+
+    // Estructura de datos para actualizar en Firebase
+    let datosPerfil = {
+        nombre: nombre,
+        cedula: cedulaCompleta,
+        correo: correo,
+        celular: celular,
+        aceptoTerminosLegales: true,
+        ultimaActualizacion: new Date().toISOString()
+    };
+
+    // Si es la primera vez que acepta, registrar la fecha de aceptación
+    if (terminosVisibles) {
+        datosPerfil.fechaAceptacionTerminos = new Date().toISOString();
+    }
+
+    // 2. Procesar Según el Estado de Autenticación
+    try {
+        if (auth.currentUser) {
+            if (pass && pass.length >= 6) {
+                await auth.currentUser.updatePassword(pass).catch(e => console.log("Password set:", e.message));
+            }
+
+            await firebase.database().ref('usuarios/' + auth.currentUser.uid).update(datosPerfil);
+            alert("✅ ¡Datos guardados exitosamente! Bienvenido/a " + nombre);
+
+            const userNameElem = document.getElementById('user-display-name');
+            if (userNameElem) userNameElem.innerText = "¡Bienvenido, " + nombre + "!";
+
+            esNuevoRegistro = false;
+            cerrarModalPerfil();
+
+        } else if (esNuevoRegistro) {
+            if (!pass || pass.length < 6) {
+                return alert("La contraseña debe tener al menos 6 caracteres.");
+            }
+
+            const cred = await auth.createUserWithEmailAndPassword(correo, pass);
+            usuarioActualID = cred.user.uid;
+
+            await firebase.database().ref('usuarios/' + usuarioActualID).set(datosPerfil);
+            alert("✅ ¡Cuenta creada exitosamente! Bienvenido/a " + nombre);
+
+            esNuevoRegistro = false;
+            cerrarModalPerfil();
+        }
+    } catch (error) {
+        alert("❌ Error al procesar la solicitud: " + error.message);
+    }
+}
+    let pedidosDelUsuario = [];
+let estadoFiltroActual = 'PENDIENTE';
+
+// Abrir el modal y cargar los pedidos desde Firebase Realtime Database
+function abrirModalMisPedidos() {
+    if (!auth.currentUser) {
+        alert("Debes iniciar sesión para consultar tus pedidos.");
+        toggleAuthModal(true);
+        return;
+    }
+
+    document.getElementById('modalMisPedidos').style.display = 'block';
+    cargarPedidosFirebase();
+}
+
+function cerrarModalMisPedidos() {
+    document.getElementById('modalMisPedidos').style.display = 'none';
+}
+
+// Escuchar los pedidos del usuario en tiempo real
+function cargarPedidosFirebase() {
+    const contenedor = document.getElementById('contenedorMisPedidos');
+    contenedor.innerHTML = '<p style="text-align: center; color: #666;">Buscando tus compras...</p>';
+
+    db.ref('pedidos')
+      .orderByChild('uidCliente')
+      .equalTo(auth.currentUser.uid)
+      .on('value', snapshot => {
+          pedidosDelUsuario = [];
+          const data = snapshot.val();
+
+          if (data) {
+              Object.keys(data).forEach(key => {
+                  pedidosDelUsuario.push(data[key]);
+              });
+              // Ordenar del más reciente al más antiguo
+              pedidosDelUsuario.sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro));
+          }
+
+          renderizarListaPedidos();
+      });
+}
+
+// Cambiar pestaña activa
+// Cambiar pestaña activa en el cliente
+function filtrarMisPedidos(estado) {
+    estadoFiltroActual = estado;
+
+    // Estilos de los botones
+    const btnPen = document.getElementById('tab-pendientes');
+    const btnApr = document.getElementById('tab-aprobados');
+    const btnRec = document.getElementById('tab-rechazados');
+
+    btnPen.style.background = (estado === 'PENDIENTE') ? 'var(--rojo)' : '#e9ecef';
+    btnPen.style.color = (estado === 'PENDIENTE') ? 'white' : '#333';
+
+    btnApr.style.background = (estado === 'APROBADO') ? '#28a745' : '#e9ecef';
+    btnApr.style.color = (estado === 'APROBADO') ? 'white' : '#333';
+
+    btnRec.style.background = (estado === 'RECHAZADO') ? '#dc3545' : '#e9ecef';
+    btnRec.style.color = (estado === 'RECHAZADO') ? 'white' : '#333';
+
+    renderizarListaPedidos();
+}
+
+// Renderizar tarjetas de los pedidos según la pestaña seleccionada
+function renderizarListaPedidos() {
+    const contenedor = document.getElementById('contenedorMisPedidos');
+    contenedor.innerHTML = "";
+
+    const filtrados = pedidosDelUsuario.filter(p => (p.pago ? p.pago.estado : 'PENDIENTE') === estadoFiltroActual);
+
+    if (filtrados.length === 0) {
+        let textoVacio = estadoFiltroActual === 'PENDIENTE' ? 'Por Confirmar' : (estadoFiltroActual === 'APROBADO' ? 'Aprobados' : 'Rechazados');
+        contenedor.innerHTML = `<div style="text-align: center; color: #888; padding: 20px;">
+            No tienes pedidos en estado <b>${textoVacio}</b>.
+        </div>`;
+        return;
+    }
+
+    filtrados.forEach(p => {
+        let itemsHtml = "";
+        for (let key in p.items) {
+            const item = p.items[key];
+            itemsHtml += `<li style="font-size:0.8rem; color:#555;">${item.n} (x${item.c} ${item.u}) - $${(item.p * item.c).toFixed(2)}</li>`;
+        }
+
+        const estadoPago = p.pago ? p.pago.estado : 'PENDIENTE';
+        let badgeColor = '#ffc107';
+        let badgeTexto = '⏳ Pendiente por Confirmar';
+        let textColor = '#212529';
+
+        if (estadoPago === 'APROBADO') {
+            badgeColor = '#28a745';
+            badgeTexto = '✅ Pago Aprobado';
+            textColor = '#ffffff';
+        } else if (estadoPago === 'RECHAZADO') {
+            badgeColor = '#dc3545';
+            badgeTexto = '❌ Pago Rechazado';
+            textColor = '#ffffff';
+        }
+
+        contenedor.innerHTML += `
+            <div style="border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-bottom: 8px;">
+                    <strong style="color: var(--negro); font-size: 0.9rem;">${p.idPedido}</strong>
+                    <span style="background: ${badgeColor}; color: ${textColor}; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
+                        ${badgeTexto}
+                    </span>
+                </div>
+
+                <ul style="margin: 5px 0; padding-left: 18px;">
+                    ${itemsHtml}
+                </ul>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem; background: #f8f9fa; padding: 6px 10px; border-radius: 6px;">
+                    <span>Ref: <b>${p.pago.referencia}</b> (${p.pago.bancoOrigen})</span>
+                    <span style="color: var(--rojo); font-weight: bold;">Bs. ${p.pago.montoBs.toFixed(2)}</span>
+                </div>
+
+                ${estadoPago === 'RECHAZADO' ? `
+                    <p style="margin: 8px 0 0 0; color: #dc3545; font-size: 0.78rem; text-align: center; font-weight: bold;">
+                        ⚠️ Tu pago no pudo ser verificado. Por favor contacta al soporte o intenta realizar el pedido nuevamente.
+                    </p>
+                ` : ''}
+
+                ${estadoPago === 'APROBADO' ? `
+                    <button onclick="verReciboDigital('${p.idPedido}')" style="width: 100%; margin-top: 8px; padding: 6px; background: var(--negro); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold;">
+                        📄 Ver Recibo / Factura
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    });
+}
+
+    let estadoFiltroAdmin = 'PENDIENTE';
+
+// let listaPedidosAdminCache = [];
+
+function cargarPedidosAdmin(estado) {
+    estadoFiltroAdmin = estado || 'PENDIENTE';
+
+    const btnPen = document.getElementById('btn-adm-pen');
+    const btnApr = document.getElementById('btn-adm-apr');
+    const btnRec = document.getElementById('btn-adm-rec');
+
+    if (btnPen && btnApr && btnRec) {
+        btnPen.style.background = (estadoFiltroAdmin === 'PENDIENTE') ? 'var(--rojo)' : '#333';
+        btnApr.style.background = (estadoFiltroAdmin === 'APROBADO') ? '#28a745' : '#333';
+        btnRec.style.background = (estadoFiltroAdmin === 'RECHAZADO') ? '#dc3545' : '#333';
+    }
+
+    db.ref('pedidos').on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) {
+            listaPedidosAdminCache = [];
+            renderizarPedidosAdmin([]);
+            return;
+        }
+
+        let pedidos = Object.values(data);
+        listaPedidosAdminCache = pedidos.filter(p => (p.pago && p.pago.estado ? p.pago.estado : 'PENDIENTE') === estadoFiltroAdmin);
+        listaPedidosAdminCache.sort((a, b) => new Date(b.fechaRegistro || 0) - new Date(a.fechaRegistro || 0));
+
+        filtrarPedidosAdmin();
+    });
+}
+
+function filtrarPedidosAdmin() {
+    const busqueda = (document.getElementById('buscar-pedido-adm')?.value || "").toLowerCase().trim();
+
+    if (!busqueda) {
+        renderizarPedidosAdmin(listaPedidosAdminCache);
+        return;
+    }
+
+    const filtrados = listaPedidosAdminCache.filter(p => {
+        const idPedido = (p.idPedido || "").toLowerCase();
+        const clienteNombre = (p.cliente && p.cliente.nombre ? p.cliente.nombre : "").toLowerCase();
+        const clienteCedula = (p.cliente && p.cliente.cedula ? p.cliente.cedula : "").toLowerCase();
+        const referencia = (p.pago && p.pago.referencia ? p.pago.referencia : "").toLowerCase();
+
+        return idPedido.includes(busqueda) ||
+               clienteNombre.includes(busqueda) ||
+               clienteCedula.includes(busqueda) ||
+               referencia.includes(busqueda);
+    });
+
+    renderizarPedidosAdmin(filtrados);
+}
+
+function renderizarPedidosAdmin(pedidos) {
+    const contenedor = document.getElementById('admin-pedidos-lista');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    if (pedidos.length === 0) {
+        contenedor.innerHTML = `<p style="color:#aaa; font-size:0.8rem; text-align:center;">No se encontraron pedidos.</p>`;
+        return;
+    }
+
+    pedidos.forEach(p => {
+        let itemsTxt = "";
+        if (p.items) {
+            for (let k in p.items) {
+                itemsTxt += `• ${p.items[k].n || 'Producto'} (x${p.items[k].c || 1} ${p.items[k].u || 'Und'})<br>`;
+            }
+        }
+
+        const clienteNombre = p.cliente ? p.cliente.nombre : 'Cliente Desconocido';
+        const clienteCedula = p.cliente ? p.cliente.cedula : 'N/A';
+        const clienteTelefono = p.cliente ? p.cliente.telefono : 'N/A';
+
+        // Datos de Envío Detallados
+        const modalidadEnvio = p.envio ? p.envio.modalidad.toUpperCase() : 'NO ESPECIFICADO';
+        const detalleEnvio = p.envio ? p.envio.detalle : 'Sin detalle';
+
+        contenedor.innerHTML += `
+            <div style="background:#1a1a1a; border:1px solid #333; padding:12px; margin-bottom:12px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <strong style="color:var(--rojo);">${p.idPedido}</strong>
+                    <small style="color:#aaa;">${new Date(p.fechaRegistro).toLocaleString()}</small>
+                </div>
+
+                <p style="margin:4px 0; font-size:0.85rem;"><b>Cliente:</b> ${clienteNombre} | <b>C.I:</b> ${clienteCedula} | <b>Tel:</b> ${clienteTelefono}</p>
+                <p style="margin:4px 0; font-size:0.85rem; color:#28a745;"><b>🚚 Modalidad Envio:</b> ${modalidadEnvio}</p>
+                <p style="margin:4px 0; font-size:0.85rem; color:#ccc;"><b>📍 Detalle Envío:</b> ${detalleEnvio}</p>
+
+                <div style="background:#222; padding:8px; border-radius:6px; margin:8px 0; font-size:0.8rem;">
+                    <b>Productos:</b><br>${itemsTxt}
+                </div>
+
+                <div style="font-size:0.85rem; margin-bottom:8px;">
+                    <b>Total:</b> $${p.pago.montoUSD.toFixed(2)} (${p.pago.montoBs.toFixed(2)} Bs) | <b>Ref:</b> ${p.pago.referencia} (${p.pago.bancoOrigen})
+                </div>
+
+                ${p.pago.estado === 'PENDIENTE' ? `
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button onclick="aprobarPedidoAdmin('${p.idPedido}')" style="flex:1; background:#28a745; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer;">
+                            ✅ Aprobar y Notificar a WS
+                        </button>
+                        <button onclick="rechazarPedidoAdmin('${p.idPedido}')" style="flex:1; background:#dc3545; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer;">
+                            ❌ Rechazar
+                        </button>
+                    </div>
+                ` : `<span style="font-size:0.8rem; color:#aaa;">Estado actual: <b>${p.pago.estado}</b></span>`}
+            </div>
+        `;
+    });
+}
+function cambiarEstadoPedido(orderId, nuevoEstado) {
+    let mensajeConfirmacion = nuevoEstado === 'RECHAZADO'
+        ? `⚠️ ¿Seguro que deseas RECHAZAR el pedido ${orderId}?`
+        : `¿Seguro que deseas APROBAR el pedido ${orderId} y emitir la factura?`;
+
+    if (confirm(mensajeConfirmacion)) {
+        db.ref(`pedidos/${orderId}`).once('value').then(snapshot => {
+            const pedido = snapshot.val();
+            if (!pedido) {
+                alert("No se encontró el pedido en la base de datos.");
+                return;
+            }
+
+            const updates = {};
+            updates[`pedidos/${orderId}/pago/estado`] = nuevoEstado;
+
+            if (nuevoEstado === 'APROBADO') {
+                // Generar la factura en HTML
+                updates[`pedidos/${orderId}/facturaHtml`] = generarHtmlFactura(pedido);
+                updates[`pedidos/${orderId}/fechaAprobacion`] = new Date().toISOString();
+            }
+
+            return db.ref().update(updates);
+        }).then(() => {
+            alert(`Pedido ${orderId} actualizado a '${nuevoEstado}' exitosamente.`);
+            cargarPedidosAdmin(estadoFiltroAdmin);
+        }).catch(err => {
+            alert("Error actualizando pedido: " + err.message);
+        });
+    }
+}
+    // --- LÓGICA DE CAMBIO DE MÉTODO DE PAGO Y COPIADO INTEGRAL ---
+
+function cambiarMetodoPagoVisual() {
+    const metodo = document.getElementById('pagoMetodoSelect').value;
+    const box = document.getElementById('box-datos-pago');
+
+    if (metodo === 'pago_movil') {
+        box.innerHTML = `<strong>📲 Datos Pago Móvil:</strong><br>` +
+            (currentConfig.pagoMovil ? currentConfig.pagoMovil.replace(/\n/g, '<br>') : 'Sin datos configurados.');
+    } else if (metodo === 'transferencia' || metodo === 'transferencia_bs') {
+        box.innerHTML = `<strong>🏦 Datos Transferencia Bs:</strong><br>` +
+            (currentConfig.transferencia ? currentConfig.transferencia.replace(/\n/g, '<br>') : 'Sin datos configurados.');
+    } else if (metodo === 'bnc_divisas') {
+        box.innerHTML = `<strong>💵 Transferencia Divisas BNC ($):</strong><br>` +
+            (currentConfig.bnc ? currentConfig.bnc.replace(/\n/g, '<br>') : 'Sin datos configurados.');
+    } else if (metodo === 'binance') {
+        box.innerHTML = `<strong>🟡 Datos Binance Pay / USDT:</strong><br>` +
+            (currentConfig.binance ? currentConfig.binance.replace(/\n/g, '<br>') : 'Sin datos configurados.');
+    }
+}
+
+function copiarTodosLosDatos() {
+    const metodo = document.getElementById('pagoMetodoSelect').value;
+    const totalUSD = document.getElementById('checkoutTotalUSD') ? document.getElementById('checkoutTotalUSD').innerText : "0.00";
+    const totalBs = document.getElementById('checkoutTotalBs') ? document.getElementById('checkoutTotalBs').innerText : "0.00";
+
+    let detallePago = "";
+
+    if (metodo === 'pago_movil') {
+        detallePago = currentConfig.pagoMovil || "";
+    } else if (metodo === 'transferencia' || metodo === 'transferencia_bs') {
+        detallePago = currentConfig.transferencia || "";
+    } else if (metodo === 'bnc_divisas') {
+        detallePago = currentConfig.bnc || "";
+    } else if (metodo === 'binance') {
+        detallePago = currentConfig.binance || "";
+    }
+
+    let textoACopiar = `📌 DATOS DE PAGO\n${detallePago}\n\n💰 Monto Total a Pagar: ${totalBs} Bs. ($${totalUSD} USD)`;
+
+    navigator.clipboard.writeText(textoACopiar).then(() => {
+        alert("✅ Datos de pago copiados con éxito.");
+    }).catch(() => {
+        alert("❌ Error al copiar los datos.");
+    });
+}
+    // --- LÓGICA DE NAVEGACIÓN Y CLIENTES EN PANEL ADMIN ---
+let clientesListaAdmin = [];
+
+function switchAdminTab(secId, btnElem) {
+    // Ocultar todas las secciones y quitar clase activa de pestañas
+    document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    // Activar sección y pestaña seleccionada
+    document.getElementById(secId).classList.add('active');
+    btnElem.classList.add('active');
+
+    // Cargas rápidas al cambiar de pestaña
+    if (secId === 'sec-pedidos') cargarPedidosAdmin(estadoFiltroAdmin);
+    if (secId === 'sec-clientes') cargarClientesAdmin();
+}
+
+function cerrarAdminPanel() {
+    document.getElementById('admin-panel').style.display = 'none';
+}
+
+// Cargar Clientes desde Firebase Realtime Database
+function cargarClientesAdmin() {
+    const cont = document.getElementById('admin-clientes-lista');
+    if (!cont) return;
+
+    cont.innerHTML = '<p style="color:#aaa; font-size:0.8rem; text-align:center;">Cargando clientes...</p>';
+
+    db.ref('usuarios').on('value', snapshot => {
+        const data = snapshot.val();
+        cont.innerHTML = "";
+
+        if (!data) {
+            cont.innerHTML = '<p style="color:#aaa; font-size:0.8rem; text-align:center;">No hay clientes registrados.</p>';
+            return;
+        }
+
+        clientesListaAdmin = Object.values(data);
+        renderizarTablaClientes(clientesListaAdmin);
+    });
+}
+
+function renderizarTablaClientes(lista) {
+    const cont = document.getElementById('admin-clientes-lista');
+    if (lista.length === 0) {
+        cont.innerHTML = '<p style="color:#aaa; font-size:0.8rem; text-align:center;">No se encontraron clientes.</p>';
+        return;
+    }
+
+    let html = `<div style="display:grid; gap:10px;">`;
+    lista.forEach(c => {
+        html += `
+            <div style="background:#222; border:1px solid #333; border-radius:8px; padding:12px; font-size:0.85rem; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong style="font-size:0.95rem; color:#fff;">${c.nombre || 'Sin Nombre'}</strong><br>
+                    <span style="color:#aaa;">C.I: ${c.cedula || 'N/A'}</span> |
+                    <span style="color:#aaa;">Tel: ${c.celular || 'N/A'}</span><br>
+                    <small style="color:#777;">${c.correo || 'Sin correo'}</small>
+                </div>
+                <div>
+                    ${c.celular ? `
+                        <a href="https://wa.me/58${c.celular.replace(/[^0-9]/g, '').slice(-10)}" target="_blank" style="background:#25D366; color:white; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:bold;">
+                            💬 WhatsApp
+                        </a>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    html += `</div>`;
+    cont.innerHTML = html;
+}
+
+function filtrarClientesAdmin() {
+    const busqueda = document.getElementById('buscar-cliente-adm').value.toLowerCase().trim();
+    const filtrados = clientesListaAdmin.filter(c =>
+        (c.nombre && c.nombre.toLowerCase().includes(busqueda)) ||
+        (c.cedula && c.cedula.toLowerCase().includes(busqueda))
+    );
+    renderizarTablaClientes(filtrados);
+}
+    function reportarFallaWhatsApp() {
+    let nombreCliente = "Cliente";
+    let cedulaCliente = "No registrada";
+
+    if (auth.currentUser) {
+        const userDb = auth.currentUser;
+        nombreCliente = userDb.displayName || userDb.email || "Cliente";
+    }
+
+    let m = "*🛠️ REPORTE DE FALLA O INCIDENCIA*%0A";
+    m += "*Emprendimiento Saul Taly*%0A";
+    m += "----------------------------------------------------%0A";
+    m += `👤 *Usuario:* ${nombreCliente}%0A`;
+    m += `📱 *Dispositivo:* Android / Web%0A`;
+    m += "----------------------------------------------------%0A";
+    m += "Hola, necesito asistencia técnica o reportar el siguiente inconveniente en la aplicación:%0A%0A- ";
+
+    const urlWS = "https://wa.me/584126950652?text=" + m;
+    window.location.href = urlWS;
+}
+
+    function seleccionarOpcionEnvio(metodo, elemento) {
+    document.querySelectorAll('.envio-card').forEach(card => card.classList.remove('active'));
+    elemento.classList.add('active');
+    document.getElementById('opcionEnvioSel').value = metodo;
+
+    const campoDelivery = document.getElementById('campo-delivery');
+    const campoMRW = document.getElementById('campo-mrw');
+
+    campODelivery.style.display = (metodo === 'delivery') ? 'block' : 'none';
+    campoMRW.style.display = (metodo === 'mrw') ? 'block' : 'none';
+}
+function cambiarOpcionEnvio() {
+    const selector = document.getElementById('opcionEnvioSel');
+    if (!selector) return;
+
+    const opcion = selector.value;
+    const campoDelivery = document.getElementById('campo-delivery-info');
+    const campoMRW = document.getElementById('campo-mrw-info');
+
+    // Ocultar todos por defecto
+    if (campoDelivery) campoDelivery.style.display = 'none';
+    if (campoMRW) campoMRW.style.display = 'none';
+
+    // Mostrar según la selección
+    if (opcion === 'delivery' && campoDelivery) {
+        campoDelivery.style.display = 'block';
+    } else if (opcion === 'mrw' && campoMRW) {
+        campoMRW.style.display = 'block';
+    }
+}
+// Aprobar pedido desde el panel y enviar comprobante/SMS a WhatsApp y Centro de Notificaciones
+function aprobarPedidoAdmin(orderId) {
+    db.ref(`pedidos/${orderId}`).once('value').then(snapshot => {
+        const pedido = snapshot.val();
+        if (!pedido) return;
+
+        // 1. Generar factura visual / comprobante
+        const facturaHtml = generarHtmlFactura(pedido);
+
+        // 2. Actualizar estado e insertar la factura en el pedido
+        db.ref(`pedidos/${orderId}/pago`).update({ estado: 'APROBADO' });
+        db.ref(`pedidos/${orderId}`).update({ facturaHtml: facturaHtml });
+
+        // 3. Notificación al Centro de Notificaciones del Cliente
+        if (pedido.uidCliente && pedido.uidCliente !== "INVITADO") {
+            db.ref(`notificaciones_cliente/${pedido.uidCliente}`).push({
+                titulo: "✅ ¡Pedido Aprobado!",
+                mensaje: `Tu pedido ${orderId} ha sido verificado con éxito y en breve se enviará a tu dirección.`,
+                fecha: new Date().toISOString(),
+                leido: false,
+                idPedido: orderId
+            });
+        }
+
+        // 4. Lanzar Notificación a la Barra de Notificaciones del Teléfono
+        enviarNotificacionTelefono("✅ Pedido Aprobado", `El pedido ${orderId} fue aprobado y entrará a despacho.`);
+
+        // 5. Preparar mensaje SMS / WhatsApp para el cliente con su comprobante
+        let m = `*✅ ¡TU PEDIDO HA SIDO APROBADO!*%0A`;
+        m += `*Emprendimiento Saul Taly*%0A----------------------------------------------------%0A`;
+        m += `📦 *Pedido N°:* ${orderId}%0A`;
+        m += `👤 *Cliente:* ${pedido.cliente.nombre}%0A`;
+        m += `💵 *Monto Aprobado:* $${pedido.pago.montoUSD.toFixed(2)} (${pedido.pago.montoBs.toFixed(2)} Bs)%0A`;
+        m += `🚚 *Envío:* ${pedido.envio.detalle}%0A%0A`;
+        m += `🚀 _Su pago fue verificado exitosamente y en breve se enviará su pedido._`;
+
+        let phoneClean = pedido.cliente.telefono.replace(/[^0-9]/g, '');
+        if (phoneClean.startsWith('0')) phoneClean = '58' + phoneClean.substring(1);
+
+        const urlWS = `https://wa.me/${phoneClean}?text=${m}`;
+        window.open(urlWS, '_blank');
+
+        alert(`Pedido ${orderId} aprobado con éxito.`);
+    });
+}
+
+function rechazarPedidoAdmin(orderId) {
+    if (confirm(`¿Seguro que deseas rechazar el pedido ${orderId}?`)) {
+        db.ref(`pedidos/${orderId}/pago`).update({ estado: 'RECHAZADO' });
+        alert(`Pedido ${orderId} rechazado.`);
+    }
+}
+
+// Función unificada para barra de notificaciones del celular (Requiere cordova-plugin-local-notification)
+function enviarNotificacionTelefono(titulo, texto) {
+    if (window.cordova && cordova.plugins && cordova.plugins.notification && cordova.plugins.notification.local) {
+        cordova.plugins.notification.local.schedule({
+            title: titulo,
+            text: texto,
+            foreground: true
+        });
+    } else {
+        console.log("Notificación Móvil Local:", titulo, texto);
+    }
+}
+
+</script>
+<!-- MODAL DE AUTENTICACIÓN -->
+<div id="auth-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; overflow-y: auto;">
+    <div class="modal-content" style="background: white; max-width: 400px; margin: 80px auto; padding: 25px; border-radius: 20px; text-align: center;">
+        <span style="position: absolute; top: 15px; right: 20px; font-size: 25px; cursor: pointer;" onclick="toggleAuthModal(false)">&times;</span>
+        <h3 style="margin-top: 0; color: var(--negro);">🔑 Iniciar Sesión / Registro</h3>
+        <p style="font-size: 0.85rem; color: #666;">Ingresa tus datos de acceso</p>
+
+        <input type="email" id="auth-email" placeholder="Correo Electrónico" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 0.9rem;">
+        <input type="password" id="auth-password" placeholder="Contraseña" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 0.9rem;">
+
+        <button onclick="loginWithEmail()" style="width: 100%; padding: 12px; background: var(--negro); color: white; border: none; border-radius: 10px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Iniciar Sesión</button>
+        <button onclick="registerWithEmail()" style="width: 100%; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 10px; font-weight: bold; margin-bottom: 15px; cursor: pointer;">Crear Cuenta Nueva</button>
+
+        <div style="margin: 15px 0; border-bottom: 1px solid #eee; position: relative;">
+            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; font-size: 0.8rem; color: #888;">Ó</span>
+        </div>
+
+        <button onclick="loginWithGoogle()" style="width: 100%; padding: 12px; background: #db4437; color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer;">Continuar con Google</button>
+    </div>
+</div>
+
+<!-- CONTENEDOR DEL FORMULARIO DE PERFIL / REGISTRO -->
+<div id="modalPerfil" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalPerfilTitulo" style="margin:0;">📋 Registrar Cuenta</h3>
+            <span id="btnCerrarModalPerfil" class="close-btn" onclick="cerrarModalPerfil()">&times;</span>
+        </div>
+        <form id="formPerfil" onsubmit="guardarDatosPerfil(event)">
+            <div class="form-group">
+                <label>Nombre Completo *</label>
+                <input type="text" id="perfilNombre" required placeholder="Ej: Saúl Taly">
+            </div>
+
+            <div class="form-group">
+                <label>Cédula de Identidad *</label>
+                <div style="display:flex; gap:5px;">
+                    <select id="perfilTipoCedula" style="width:30%;">
+                        <option value="V-">V-</option>
+                        <option value="E-">E-</option>
+                        <option value="J-">J-</option>
+                    </select>
+                    <input type="number" id="perfilCedulaNum" required placeholder="Ej: 12345678" style="width:70%;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico *</label>
+                <input type="email" id="perfilCorreo" required placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono Celular *</label>
+                <input type="tel" id="perfilCelular" required placeholder="04141234567">
+            </div>
+
+            <div class="form-group" id="perfilPasswordGroup">
+                <label>Contraseña *</label>
+                <input type="password" id="perfilPassword" placeholder="******">
+            </div>
+
+            <!-- Campo para solicitar y verificar el código SMS -->
+            <div id="grupoCodigoSms" class="form-group" style="display: none; background: #222; padding: 10px; border-radius: 8px;">
+                <label style="color: #fff;">💬 Código de Verificación SMS:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="perfilCodigoSMS" placeholder="Ej: 123456" style="flex: 1;" maxlength="6">
+                    <button type="button" onclick="confirmarCodigoSMS()" style="background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                        ✅ Validar Código
+                    </button>
+                </div>
+                <small style="color: #aaa; margin-top: 4px;">Ingresa el código de 6 dígitos enviado a tu número.</small>
+            </div>
+            <!-- BLOQUE DINÁMICO: TÉRMINOS Y CONDICIONES (Se oculta si ya los aceptó) -->
+            <div id="contenedorTerminos" class="form-group" style="margin-top:15px; margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                <label style="font-size:0.8rem; cursor:pointer; display:flex; align-items:flex-start; gap:8px;">
+                    <input type="checkbox" id="perfilAceptoTerminos" style="margin-top:3px;">
+                    <span>Acepto los <a href="#" onclick="abrirModalTerminos(event)" style="color:var(--rojo); text-decoration:underline;">Términos, Condiciones y Exención de Responsabilidad Legal</a> bajo las leyes venezolanas.</span>
+                </label>
+            </div>
+            <!-- Modal para mostrar el texto de Términos y Condiciones -->
+            <div id="modalTerminosLegales" class="modal" style="display: none; z-index: 99999;">
+                <div class="modal-content" style="max-width: 550px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3 style="margin: 0; font-size: 1.05rem; color: var(--negro);">📜 Términos y Condiciones Legal de Venezuela</h3>
+                        <span class="close-btn" onclick="cerrarModalTerminos()">&times;</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: #333; line-height: 1.5; text-align: justify; white-space: pre-line;">
+                        <strong>EMPRENDIMIENTO SAUL TALY (RIF: J-504752800)</strong>
+
+                        <strong>1. ACEPTACIÓN DEL CONTRATO</strong>
+                        Al hacer clic en la casilla "Acepto los Términos y Condiciones", el USUARIO manifiesta su voluntad expresa y libre de celebrar el presente contrato electrónico con EMPRENDIMIENTO SAUL TALY, conforme a la Ley de Mensajes de Datos y Firmas Electrónicas y el Art. 1.133 del Código Civil de Venezuela.
+
+                        <strong>2. NATURALEZA DE LOS PRODUCTOS</strong>
+                        EMPRENDIMIENTO SAUL TALY comercializa alimentos naturales, frutos secos y miel. El usuario reconoce que las imágenes son referenciales. El peso y stock están sujetos a variación comercial.
+
+                        <strong>3. EXENCIÓN DE RESPONSABILIDAD Y LIBERACIÓN DE DEMANDAS</strong>
+                        a) <em>Manipulación:</em> Al recibir el producto, el USUARIO asume la responsabilidad total de su almacenamiento y conservación.
+                        b) <em>Salud y Alergias:</em> El USUARIO exime a EMPRENDIMIENTO SAUL TALY y a sus representantes de cualquier demanda civil, penal o administrativa derivada de reacciones alérgicas o patologías preexistentes por el consumo de frutos secos o miel.
+                        c) <em>Envíos:</em> La empresa no responde por retrasos, hurtos o daños ocasionados por servicios de encomienda/delivery externos.
+
+                        <strong>4. VERIFICACIÓN DE PAGOS</strong>
+                        Los pagos mediante Pago Móvil, Transferencia o Binance quedan sujetos a verificación bancaria efectiva antes del despacho.
+
+                        <strong>5. JURISDICCIÓN</strong>
+                        Cualquier disputa se someterá a los tribunales ordinarios de Ciudad Guayana, Estado Bolívar, República Bolivariana de Venezuela.
+                    </div>
+                    <button type="button" onclick="cerrarModalTerminos()" style="width: 100%; margin-top: 15px; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        Entendido y Entendido
+                    </button>
+                </div>
+            </div>
+            <!-- Reemplazar o insertar dentro del formulario del Modal Perfil -->
+            <div id="seccion-verificacion-sms" style="display: none; margin-top: 15px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #1d3557;">
+                <h4 style="margin: 0 0 8px 0; color: #1d3557; font-size: 0.9rem;">📲 Verificación de Teléfono Obrigatoria</h4>
+                <p style="font-size: 0.8rem; margin: 0 0 10px 0; color: #555;">Hemos enviado un código de 6 dígitos a su número telefónico.</p>
+
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="perfilCodigoVerificacion" placeholder="Código de 6 dígitos" maxlength="6" style="flex:1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-size: 1rem; letter-spacing: 2px;">
+                    <button type="button" id="btnConfirmarCodigo" onclick="validarCodigoSMS()" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                        Validar
+                    </button>
+                </div>
+            </div>
+            <!-- Div invisible necesario para el ReCAPTCHA de Firebase Phone Auth -->
+            <div id="recaptcha-container"></div>
+            <button type="submit" id="btnGuardarPerfil" class="btn-ws" style="width:100%; font-size:0.95rem;">🚀 Registrarme</button>
+
+        </form>
+    </div>
+</div>
+
+<!-- MODAL CHECKOUT EN 2 PASOS (VARIOS BANCOS + YA PAGUÉ) -->
+<div id="modalCheckout" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-btn" onclick="cerrarModalCheckout()">&times;</span>
+
+        <!-- RESUMEN DE LA COMPRA (FIJO) -->
+        <h3 style="margin-top: 0; color: var(--negro); text-align: center;">🛒 Resumen del Pedido</h3>
+        <div id="checkoutListaProductos" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: right; margin-bottom: 15px;">
+            Total USD: $<span id="checkoutTotalUSD">0.00</span> | Total Bs: <span id="checkoutTotalBs">0.00</span> Bs
+        </div>
+
+        <!-- PASO 1: SELECCIÓN DE BANCO Y DATOS DE PAGO -->
+        <div id="paso-datos-pago">
+            <h4 style="margin: 0 0 10px 0; color: var(--negro);">1. Selecciona el Método / Banco de Pago:</h4>
+
+            <div class="form-group">
+                <select id="pagoMetodoSelect" onchange="cambiarMetodoPagoVisual()" style="font-weight: bold; padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%;">
+                    <option value="pago_movil">📱 Pago Móvil (Bs)</option>
+                    <option value="transferencia">🏦 Transferencia Bancaria (Bs)</option>
+                    <option value="bnc_divisas">💵 Cuenta Moneda Extranjera BNC ($)</option>
+                    <option value="binance">🟡 Binance Pay / USDT</option>
+                </select>
+            </div>
+
+            <div id="box-datos-pago" class="datos-bancarios-card" style="min-height: 80px;">
+                <!-- Se llena dinámicamente según la opción seleccionada -->
+            </div>
+
+            <button type="button" onclick="copiarTodosLosDatos()" style="width: 100%; padding: 8px; background: #333; color: white; border: none; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-size: 0.85rem;">
+                📋 Copiar Datos de Pago
+            </button>
+
+            <button type="button" onclick="mostrarFormularioPago()" style="width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase;">
+                ✅ ¡Ya Pagué! Registrar Comprobante
+            </button>
+        </div>
+
+        <!-- PASO 2: FORMULARIO DE REGISTRO DE PAGO (OCULTO INICIALMENTE) -->
+        <div id="paso-formulario-pago" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">
+                <h4 style="margin: 0; color: var(--negro);">2. Reportar Datos del Pago</h4>
+                <button type="button" onclick="volverADatosPago()" style="background: none; border: none; color: var(--rojo); cursor: pointer; font-weight: bold; font-size: 0.85rem;">
+                    ⬅️ Cambiar Método
+                </button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); registrarPedidoEnFirebase();">
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="cliNombre" required placeholder="Tu nombre y apellido">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula *</label>
+                        <input type="text" id="cliCedula" required placeholder="Ej: V-12345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono *</label>
+                        <input type="tel" id="cliTelefono" required placeholder="Ej: 04141234567">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Banco de Origen *</label>
+                        <input type="text" id="pagoBancoOrigen" required placeholder="Ej: Banesco, Mercantil...">
+                    </div>
+                    <div class="form-group">
+                        <label>Nº Referencia *</label>
+                        <input type="text" id="pagoReferencia" required placeholder="Últimos números">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha del Pago *</label>
+                    <input type="date" id="pagoFecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Adjuntar Captura del Comprobante (Opcional)</label>
+                    <input type="file" accept="image/*" onchange="previsualizarCaptura(event)" style="font-size: 0.8rem;">
+                    <img id="imgPreview" class="comprobante-preview" alt="Vista previa">
+                </div>
+                <!-- SELECTOR DE MÉTODO DE ENVÍO -->
+                <div class="form-group">
+                    <label for="opcionEnvioSel">🚚 Método de Entrega / Envío:</label>
+                    <select id="opcionEnvioSel" onchange="cambiarOpcionEnvio()">
+                        <option value="retiro">🏪 Retiro en Tienda Física</option>
+                        <option value="delivery">🛵 Delivery Local (Ciudad Guayana)</option>
+                        <option value="mrw">📦 Envío Nacional por MRW (cobro a destino)</option>
+                    </select>
+                </div>
+
+                <!-- CAMPOS DINÁMICOS -->
+                <div id="campo-delivery-info" class="campo-envio-dinamico">
+                    <div class="form-group">
+                        <label for="envioDireccionExacta">📍 Dirección de Entrega / Punto de Referencia:</label>
+                        <input type="text" id="envioDireccionExacta" placeholder="Ej: Sector Unare, frente a la plaza...">
+                    </div>
+                </div>
+
+                <div id="campo-mrw-info" class="campo-envio-dinamico">
+                    <div class="form-group">
+                        <label for="envioAgenciaMRW">🏢 Agencia MRW de Destino:</label>
+                        <input type="text" id="envioAgenciaMRW" placeholder="Ej: Agencia MRW Alta Vista - Código 0102">
+                    </div>
+                </div>
+                <button type="submit" class="btn-confirmar-pago" style="background: var(--rojo); font-size: 1rem; padding: 14px;">
+                    🚀 Confirmar y Finalizar Pedido
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL DE HISTORIAL DE PEDIDOS -->
+<div id="modalMisPedidos" class="modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <span class="close-btn" onclick="cerrarModalMisPedidos()">&times;</span>
+        <h3 style="margin-top: 0; color: var(--negro); text-align: center;">📦 Mis Pedidos</h3>
+
+        <!-- Pestañas para filtrar estado -->
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;">
+            <button id="tab-pendientes" onclick="filtrarMisPedidos('PENDIENTE')" style="flex: 1; padding: 8px; border: none; background: var(--rojo); color: white; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                ⏳ Por Confirmar
+            </button>
+            <button id="tab-aprobados" onclick="filtrarMisPedidos('APROBADO')" style="flex: 1; padding: 8px; border: none; background: #e9ecef; color: #333; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                ✅ Aprobados
+            </button>
+            <button id="tab-rechazados" onclick="filtrarMisPedidos('RECHAZADO')" style="flex: 1; padding: 8px; border: none; background: #e9ecef; color: #333; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+                ❌ Rechazados
+            </button>
+        </div>
+
+        <!-- Lista contenedora de los pedidos -->
+        <div id="contenedorMisPedidos" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+            <p style="text-align: center; color: #666;">Cargando pedidos...</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
