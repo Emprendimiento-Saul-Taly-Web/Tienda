@@ -357,16 +357,28 @@
         .qty-badge { position: absolute; top: 10px; left: 10px; background: var(--rojo); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         .view-fs-btn { position: absolute; top: 10px; right: 10px; background: var(--rojo); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 15; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-.btn-ws {
+.btn-ws-carrito {
   background: #28a745;
   color: white;
   border: none;
-  padding: 15px;
+  padding: 14px 20px;
   border-radius: 35px;
-  width: 100%;
   font-weight: 700;
   cursor: pointer;
   text-transform: uppercase;
+  font-size: 14px;
+
+  /* Centrado y fijado abajo en pantallas móviles */
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px;
+  box-sizing: border-box;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
         .footer {
             position: fixed; bottom: 0; width: 100%;
