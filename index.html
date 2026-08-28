@@ -1467,8 +1467,11 @@ function confirmAdd(id) {
     render();
 }
 
-    function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; document.body.classList.remove('modal-open');}
-
+   function closeProductModal() { 
+    document.getElementById('product-modal').style.display = 'none'; 
+    document.body.classList.remove('modal-open');
+    document.querySelector('.footer').style.display = 'block'; // <-- Muestra el botón de nuevo
+}
   function updateCartUI() {
     let total = 0, count = 0;
     const list = document.getElementById('cart-items-list');
