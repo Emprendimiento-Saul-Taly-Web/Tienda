@@ -18,6 +18,34 @@ body.modal-open .btn-add-grid,
 body.modal-open .footer {
     display: none !important;
 }
+        /* Estilo mejorado para el botón de cerrar modal */
+.btn-close, .close-btn, .modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background-color: #f1f3f5;
+  color: #333333;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.2s ease;
+}
+
+/* Efecto al presionar o pasar el cursor */
+.btn-close:active {
+  background-color: #e2e6ea;
+  transform: scale(0.95);
+}
+        
                 /* BOTÓN NATIVO ESTILO GOOGLE */
         .btn-google-native {
             width: 100%;
@@ -1284,6 +1312,8 @@ function volverADatosPago() {
 }
 
 function cerrarModalCheckout() {
+    <button type="button" class="btn-close" onclick="cerrarModal()">&times;</button>
+    
     document.getElementById('modalCheckout').style.display = 'none';
     document.querySelector('.footer').style.display = 'block';
     capturaBase64 = "";
