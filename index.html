@@ -1202,7 +1202,17 @@ firebase.auth().onAuthStateChanged((user) => {
         if (userNameElem) userNameElem.innerText = "";
     }
 });
+// Deshabilitar clic derecho
+document.addEventListener('contextmenu', (e) => e.preventDefault());
 
+// Bloquear F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.onkeydown = function(e) {
+    if (e.keyCode == 123 || 
+       (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || 
+       (e.ctrlKey && e.keyCode == 85)) {
+        return false;
+    }
+};
 function generarHtmlFactura(pedido) {
     let tablaFilas = "";
     let subtotalUSD = 0;
