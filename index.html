@@ -1518,7 +1518,7 @@ db.ref('pedidos').on('child_added', snapshot => {
         if (usuarioActual) {
             db.ref('usuarios/' + usuarioActual.uid).once('value').then(s => {
                 const u = s.val();
-                if ((u && u.rol === 'admin') || usuarioActual.email === 'emprendimientosaultaly@gmail.com') {
+                if ((u && u.rol === 'admin') || usuarioActual.email === 'saul.taly14@gmail.com') {
                     const montoUSD = nuevoPedido.pago && nuevoPedido.pago.montoUSD
                         ? parseFloat(nuevoPedido.pago.montoUSD).toFixed(2)
                         : "0.00";
