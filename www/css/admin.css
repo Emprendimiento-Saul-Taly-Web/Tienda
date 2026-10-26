@@ -1,0 +1,146 @@
+/* Color de texto blanco para los elementos del panel */
+#admin-panel,
+.admin-card-box,
+.admin-card-box h4,
+.admin-card-box p,
+.admin-card-box span,
+.admin-card-box strong,
+.admin-card-box td,
+.admin-card-box th,
+.admin-product-name,
+.admin-item-title {
+    color: #ffffff !important;
+}
+
+/* Fondo negro u oscuro para los contenedores */
+#admin-panel,
+.admin-card-box {
+    background-color: #121212 !important; /* Usa #000000 si prefieres negro absoluto */
+    border: 1px solid #2a2a2a;
+}
+
+/* Asegura que las tablas e ítems internos no conserven fondos blancos */
+.admin-card-box table,
+.admin-card-box tr,
+.admin-card-box td,
+.admin-card-box th,
+.admin-card-box .card-body,
+.admin-card-box .card-header {
+    background-color: transparent !important;
+}
+/* Encabezado Fijo */
+.admin-header-nav {
+    background: #181818;
+    padding: 14px 20px;
+    border-bottom: 2px solid var(--amarillo-pastel, #ffe066);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.admin-header-nav h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Navegación por Pestañas */
+.admin-nav-tabs {
+    display: flex;
+    gap: 10px;
+    background: #1e1e1e;
+    padding: 12px 20px;
+    overflow-x: auto;
+    border-bottom: 1px solid #2a2a2a;
+    scrollbar-width: thin;
+}
+
+.admin-tab-btn {
+    background: #2a2a2a;
+    color: #b0b0b0;
+    border: 1px solid #3a3a3a;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-tab-btn:hover {
+    background: #333333;
+    color: #ffffff;
+}
+
+.admin-tab-btn.active {
+    background: var(--amarillo-pastel, #ffe066);
+    color: #121212; /* Texto oscuro para legibilidad sobre el amarillo */
+    border-color: var(--amarillo-pastel, #ffe066);
+    box-shadow: 0 2px 8px rgba(255, 224, 102, 0.3);
+}
+
+/* Contenido de Secciones */
+.admin-section {
+    display: none;
+    padding: 24px 20px;
+    max-width: 950px;
+    margin: 0 auto;
+    color: #ffffff;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+/* Tarjetas y Contenedores Internos */
+.admin-card-box {
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #2e2e2e;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-card-box h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #2e2e2e;
+    padding-bottom: 10px;
+}
+
+/* Rejillas y Formularios */
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.admin-in {
+    width: 100%;
+    padding: 10px 12px;
+    background: #121212;
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.admin-in:focus {
+    border-color: var(--amarillo-pastel, #ffe066);
+}
