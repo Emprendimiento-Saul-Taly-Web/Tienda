@@ -12,13 +12,19 @@
     color: #ffffff !important;
 }
 
-/* Fondo negro u oscuro para los contenedores */
-#admin-panel,
-.admin-card-box {
-    background-color: #121212 !important; /* Usa #000000 si prefieres negro absoluto */
-    border: 1px solid #2a2a2a;
+#admin-panel {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #121212; /* Fondo negro como solicitaste antes */
+    z-index: 99999;
+    overflow-y: auto;
 }
-
 /* Asegura que las tablas e ítems internos no conserven fondos blancos */
 .admin-card-box table,
 .admin-card-box tr,
