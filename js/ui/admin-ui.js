@@ -65,7 +65,7 @@ function verFacturaAdmin(idPedido) {
                 bottom: 0;
                 left: 0;
                 right: 0;
- git init               width: 100%;
+                width: 100%;
                 background: #181818;
                 padding: 12px 20px;
                 display: flex;
