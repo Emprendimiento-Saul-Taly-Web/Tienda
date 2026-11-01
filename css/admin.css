@@ -12,19 +12,17 @@
     color: #ffffff !important;
 }
 
-#admin-panel {
-    display: none !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #121212; /* Fondo negro como solicitaste antes */
-    z-index: 99999;
-    overflow-y: auto;
-}
+  #admin-panel {
+                             display: none;
+                             position: fixed;
+                             top: 0; left: 0; width: 100%; height: 100%;
+                             background: #121212;
+                             color: #fff;
+                             z-index: 7000;
+                             overflow-y: auto;
+                             box-sizing: border-box;
+                             padding: 0;
+                         }
 /* Asegura que las tablas e ítems internos no conserven fondos blancos */
 .admin-card-box table,
 .admin-card-box tr,
